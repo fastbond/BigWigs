@@ -84,7 +84,7 @@ L:RegisterTranslations("deDE", function() return {
 ---------------------------------
 
 -- module variables
-module.revision = 20008 -- To be overridden by the module!
+module.revision = 20009 -- To be overridden by the module!
 module.enabletrigger = module.translatedName -- string or table {boss, add1, add2}
 --module.wipemobs = { L["add_name"] } -- adds which will be considered in CheckForEngage
 module.toggleoptions = {"wingbuffet", "shadowflame", "frenzy", "bosskill"}
@@ -95,8 +95,8 @@ local timer = {
 	firstWingbuffet = 30,
 	wingbuffet = 30,
 	wingbuffetCast = 1,
-	firstShadowflame = 16,
-	shadowflame = 16,
+	earliestShadowflame = 10.5,
+	latestShadowflame = 14.5,
 	shadowflameCast = 2,
 	firstFrenzy = 10,
 	frenzy = 10,
@@ -147,7 +147,7 @@ function module:OnEngage()
 		self:Bar(L["wingbuffet1_bar"], timer.firstWingbuffet, icon.wingbuffet)
 	end
 	if self.db.profile.shadowflame then
-		self:Bar(L["shadowflame_Nextbar"], timer.firstShadowflame, icon.shadowflame)
+		self:IntervalBar(L["shadowflame_Nextbar"], timer.earliestShadowflame, timer.latestShadowflame, icon.shadowflame)
 	end
 	if self.db.profile.frenzy then
 		self:Bar(L["frenzy_Nextbar"], timer.firstFrenzy, icon.frenzy, true, "white")
@@ -195,7 +195,7 @@ function module:BigWigs_RecvSync(sync, rest, nick)
 		self:Message(L["shadowflame_warning"], "Important", true, "Alarm")
 		self:RemoveBar(L["shadowflame_Nextbar"]) -- remove timer bar
 		self:Bar(L["shadowflame_bar"], timer.shadowflameCast, icon.shadowflame, true, "red") -- show cast bar
-		self:DelayedBar(timer.shadowflameCast, L["shadowflame_Nextbar"], timer.shadowflame-timer.shadowflameCast, icon.shadowflame) -- delayed timer bar
+		self:DelayedIntervalBar(timer.shadowflameCast, L["shadowflame_Nextbar"], timer.earliestShadowflame-timer.shadowflameCast, timer.latestShadowflame-timer.shadowflameCast, icon.shadowflame) -- delayed timer bar
 	elseif sync == syncName.frenzy and self.db.profile.frenzy then
 		self:Message(L["frenzy_message"], "Important", nil, true, "Alert")
 		self:Bar(L["frenzy_bar"], timer.frenzy, icon.frenzy, true, "red")

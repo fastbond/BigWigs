@@ -5,7 +5,7 @@
 
 local module, L = BigWigs:ModuleDeclaration("Lucifron", "Molten Core")
 
-module.revision = 20007 -- To be overridden by the module!
+module.revision = 20008 -- To be overridden by the module!
 module.enabletrigger = module.translatedName -- string or table {boss, add1, add2}
 
 module.toggleoptions = {"adds", "curse", "doom", "shock", "mc", "bosskill"}
@@ -19,7 +19,7 @@ module.defaultDB = {
 ---------------------------------
 
 local timer = {
-	curse = 15,
+	curse = 20,
 	firstCurse = 20,
 	doom = 20,
 	firstDoom = 10,

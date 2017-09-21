@@ -67,7 +67,7 @@ L:RegisterTranslations("deDE", function() return {
 ---------------------------------
 
 -- module variables
-module.revision = 20004 -- To be overridden by the module!
+module.revision = 20005 -- To be overridden by the module!
 module.enabletrigger = module.translatedName -- string or table {boss, add1, add2}
 --module.wipemobs = { L["add_name"] } -- adds which will be considered in CheckForEngage
 module.toggleoptions = {"mc", --[["split",]] "bosskill"}
@@ -100,14 +100,14 @@ function module:OnEnable()
 	self:RegisterEvent("CHAT_MSG_SPELL_AURA_GONE_PARTY", "Event")
 	self:RegisterEvent("CHAT_MSG_SPELL_AURA_GONE_OTHER", "Event")
 	--self:RegisterEvent("CHAT_MSG_COMBAT_FRIENDLY_DEATH", "Event")
-	--self:RegisterEvent("UNIT_HEALTH")
+	self:RegisterEvent("UNIT_HEALTH")
 
-	--[[self:TriggerEvent("BigWigs_ThrottleSync", "SkeramSplit80Soon", 100)
+	self:TriggerEvent("BigWigs_ThrottleSync", "SkeramSplit80Soon", 100)
 	self:TriggerEvent("BigWigs_ThrottleSync", "SkeramSplit75Now", 100)
 	self:TriggerEvent("BigWigs_ThrottleSync", "SkeramSplit55Soon", 100)
 	self:TriggerEvent("BigWigs_ThrottleSync", "SkeramSplit50Now", 100)
 	self:TriggerEvent("BigWigs_ThrottleSync", "SkeramSplit30Soon", 100)
-	self:TriggerEvent("BigWigs_ThrottleSync", "SkeramSplit25Now", 100)]]
+	self:TriggerEvent("BigWigs_ThrottleSync", "SkeramSplit25Now", 100)
 
 	self:ThrottleSync(1, syncName.mc)
 	self:ThrottleSync(1, syncName.mcOver)
@@ -204,62 +204,62 @@ function module:CHAT_MSG_MONSTER_YELL(msg)
 	end
 end
 
---[[function module:UNIT_HEALTH(arg1)
-if UnitName(arg1) == boss then
-local health = UnitHealth(arg1)
-local maxhealth = UnitHealthMax(arg1)
-if (health > 424782 and health <= 453100) and maxhealth == 566375 and not splittime then
-self:Sync("SkeramSplit80Soon")
-elseif (health > 283188 and health <= 311507) and maxhealth == 566375 and not splittime then
-self:Sync("SkeramSplit55Soon")
-elseif (health > 141594 and health <= 169913) and maxhealth == 566375 and not splittime then
-self:Sync("SkeramSplit30Soon")
-elseif (health > 311508 and health <= 424781) and maxhealth == 566375 and splittime then
-self:Sync("SkeramSplit75Now")
-elseif (health > 169914 and health <= 283187) and maxhealth == 566375 and splittime then
-self:Sync("SkeramSplit50Now")
-elseif (health > 1 and health <= 141593) and maxhealth == 566375 and splittime then
-self:Sync("SkeramSplit25Now")
+function module:UNIT_HEALTH(arg1)
+	if UnitName(arg1) == boss then
+		local health = UnitHealth(arg1)
+		local maxhealth = UnitHealthMax(arg1)
+		if (health > 424782 and health <= 453100) and maxhealth == 566375 and not splittime then
+			self:Sync("SkeramSplit80Soon")
+		elseif (health > 283188 and health <= 311507) and maxhealth == 566375 and not splittime then
+			self:Sync("SkeramSplit55Soon")
+		elseif (health > 141594 and health <= 169913) and maxhealth == 566375 and not splittime then
+			self:Sync("SkeramSplit30Soon")
+		elseif (health > 311508 and health <= 424781) and maxhealth == 566375 and splittime then
+			self:Sync("SkeramSplit75Now")
+		elseif (health > 169914 and health <= 283187) and maxhealth == 566375 and splittime then
+			self:Sync("SkeramSplit50Now")
+		elseif (health > 1 and health <= 141593) and maxhealth == 566375 and splittime then
+			self:Sync("SkeramSplit25Now")
+		end
+	end
 end
-end
-end]]
 
 ------------------------------
 --      Sync Handlers	    --
 ------------------------------
 
 function module:BigWigs_RecvSync(sync, rest, nick)
-	--[[if sync == "SkeramSplit80Soon" then
-	splittime = true
-	if self.db.profile.split then
-	self:Message(L["splitsoon_message"], "Urgent")
-	end
+	if sync == "SkeramSplit80Soon" then
+		splittime = true
+			if self.db.profile.split then
+			self:Message(L["splitsoon_message"], "Urgent")
+		end
 	elseif sync == "SkeramSplit55Soon" then
-	splittime = true
-	if self.db.profile.split then
-	self:Message(L["splitsoon_message"], "Urgent")
-	end
+		splittime = true
+			if self.db.profile.split then
+			self:Message(L["splitsoon_message"], "Urgent")
+		end
 	elseif sync == "SkeramSplit30Soon" then
-	splittime = true
-	if self.db.profile.split then
-	self:Message(L["splitsoon_message"], "Urgent")
-	end
+		splittime = true
+		if self.db.profile.split then
+			self:Message(L["splitsoon_message"], "Urgent")
+		end
 	elseif sync == "SkeramSplit75Now" then
-	splittime = false
-	if self.db.profile.split then
-	self:Message(L["split_message"], "Important", "Alarm")
-	end
+		splittime = false
+		if self.db.profile.split then
+			self:Message(L["split_message"], "Important", "Alarm")
+		end
 	elseif sync == "SkeramSplit50Now" then
-	splittime = false
-	if self.db.profile.split then
-	self:Message(L["split_message"], "Important", "Alarm")
-	end
+		splittime = false
+		if self.db.profile.split then
+			self:Message(L["split_message"], "Important", "Alarm")
+		end
 	elseif sync == "SkeramSplit25Now" then
-	splittime = false
-	if self.db.profile.split then
-	self:Message(L["split_message"], "Important", "Alarm")
-	end
-	else]]if sync == syncName.mc then
+		splittime = false
+		if self.db.profile.split then
+			self:Message(L["split_message"], "Important", "Alarm")
+		end
+	elseif sync == syncName.mc then
 		if self.db.profile.mc then
 			if rest == UnitName("player") then
 				self:Bar(string.format(L["mindcontrol_bar"], UnitName("player")), timer.mc, icon.mc, true, "White")

@@ -5,7 +5,7 @@
 
 local module, L = BigWigs:ModuleDeclaration("Ragnaros", "Molten Core")
 
-module.revision = 20008 -- To be overridden by the module!
+module.revision = 20010 -- To be overridden by the module!
 module.enabletrigger = module.translatedName -- string or table {boss, add1, add2}
 module.toggleoptions = {"start", "aoeknock", "submerge", "emerge", "adds", "bosskill"}
 
@@ -22,14 +22,13 @@ module.defaultDB = {
 ---------------------------------
 
 local timer = {
-	emerge_soon1 = 78,
-	emerge_soon2 = 47.5,
+	emerge_soon1 = 81,
+	emerge_soon2 = 51,
 	emerge_soon3 = 29,
 	hammer_of_ragnaros = 11,
 	emerge = 90,
 	submerge = 180,
-	earliestKnockback = 25,
-	latestKnockback = 30,
+	knockback = 25,
 }
 local icon = {
 	emerge_soon = "Inv_Hammer_Unique_Sulfuras",
@@ -289,9 +288,10 @@ function module:Emerge()
 	if self.db.profile.emerge then
 		self:Message(L["emerge_message"], "Attention")
 	end
-
-	if lastKnockback then
-		local knocktimer = timer.earliestKnockback-lastKnockback
+	
+	self:Knockback()
+	--[[if lastKnockback then
+		--local knocktimer = timer.earliestKnockback-lastKnockback
 		local latestKnocktimer = timer.latestKnockback-lastKnockback
 		if knocktimer > 0 then
 			self:IntervalBar(L["knockback_bar"], knocktimer, latestKnocktimer, icon.knockback)
@@ -306,7 +306,7 @@ function module:Emerge()
 		firstKnockback = false
 	else
 		self:Knockback()
-	end
+	end]]
 
 	if self.db.profile.submerge then
 		self:Bar(L["submerge_bar"], timer.submerge, icon.submerge)
@@ -331,9 +331,9 @@ function module:Knockback()
 		end
 		firstKnockback = false
 		self:RemoveWarningSign(icon.knockbackWarn, true)
-		self:IntervalBar(L["knockback_bar"], timer.earliestKnockback, timer.latestKnockback, icon.knockback)
-		self:DelayedMessage(timer.earliestKnockback - 3, L["knockback_soon_message"], "Urgent", true, "Alarm", nil, nil, true)
-		self:DelayedWarningSign(timer.earliestKnockback - 3, icon.knockbackWarn, 8)
+		self:Bar(L["knockback_bar"], timer.knockback, icon.knockback)
+		self:DelayedMessage(timer.knockback - 3, L["knockback_soon_message"], "Urgent", true, "Alarm", nil, nil, true)
+		self:DelayedWarningSign(timer.knockback - 3, icon.knockbackWarn, 8)
 	end
 end
 

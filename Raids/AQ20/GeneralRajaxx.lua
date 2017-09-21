@@ -87,7 +87,7 @@ L:RegisterTranslations("deDE", function() return {
 ---------------------------------
 
 -- module variables
-module.revision = 20007 -- To be overridden by the module!
+module.revision = 20008 -- To be overridden by the module!
 module.enabletrigger = {module.translatedName, andorov} -- string or table {boss, add1, add2}
 module.toggleoptions = {"wave", "thundercrash", "bosskill"}
 

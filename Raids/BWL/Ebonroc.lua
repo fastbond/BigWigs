@@ -83,7 +83,7 @@ L:RegisterTranslations("deDE", function() return {
 ---------------------------------
 
 -- module variables
-module.revision = 20007 -- To be overridden by the module!
+module.revision = 20008 -- To be overridden by the module!
 module.enabletrigger = module.translatedName -- string or table {boss, add1, add2}
 --module.wipemobs = { L["add_name"] } -- adds which will be considered in CheckForEngage
 module.toggleoptions = {"curse", "wingbuffet", "shadowflame", "bosskill"}
@@ -94,7 +94,8 @@ local timer = {
 	wingbuffet = 30,
 	wingbuffetCast = 1,
 	curse = 8,
-	shadowflame = 16,
+	earliestShadowflame = 10.5,
+	latestShadowflame = 14.5,
 	shadowflameCast = 2,
 }
 local icon = {
@@ -142,7 +143,7 @@ function module:OnEngage()
 		self:Bar(L["shadowcurse_Firstbar"], timer.curse, icon.curse, true, "white")
 	end
 	if self.db.profile.shadowflame then
-		self:Bar(L["shadowflame_Nextbar"], timer.shadowflame, icon.shadowflame)
+		self:IntervalBar(L["shadowflame_Nextbar"], timer.earliestShadowflame, timer.latestShadowflame, icon.shadowflame)
 	end
 end
 
@@ -213,6 +214,6 @@ function module:ShadowFlame()
 		self:Message(L["shadowflame_warning"], "Important", true, "Alarm")
 		self:RemoveBar(L["shadowflame_Nextbar"]) -- remove timer bar
 		self:Bar(L["shadowflame_bar"], timer.shadowflameCast, icon.shadowflame, true, "red") -- show cast bar
-		self:DelayedBar(timer.shadowflameCast, L["shadowflame_Nextbar"], timer.shadowflame-timer.shadowflameCast, icon.shadowflame) -- delayed timer bar
+		self:DelayedIntervalBar(timer.shadowflameCast, L["shadowflame_Nextbar"], timer.earliestShadowflame-timer.shadowflameCast, timer.latestShadowflame-timer.shadowflameCast, icon.shadowflame) -- delayed timer bar
 	end
 end

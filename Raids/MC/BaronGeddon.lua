@@ -5,7 +5,7 @@
 
 local module, L = BigWigs:ModuleDeclaration("Baron Geddon", "Molten Core")
 
-module.revision = 20004 -- To be overridden by the module!
+module.revision = 20005 -- To be overridden by the module!
 module.enabletrigger = module.translatedName -- string or table {boss, add1, add2}
 module.wipemobs = nil
 module.toggleoptions = {"inferno", "service", "bomb", "mana", "announce", "icon", "bosskill"}
@@ -18,12 +18,12 @@ module.toggleoptions = {"inferno", "service", "bomb", "mana", "announce", "icon"
 local timer = {
 	bomb = 8,
 	inferno = 8,
-	earliestNextInferno = 18,
-	latestNextInferno = 24,
-	earliestFirstIgnite = 10,
-	latestFirstIgnite = 15,
-	earliestIgnite = 20,
-	latestIgnite = 30,
+	firstBomb = 35,
+	nextBomb = 35,
+	firstInferno = 45,
+	nextInferno = 45,
+	firstIgnite = 30,
+	nextIgnite = 30,
 	service = 8,
 }
 local icon = {
@@ -42,6 +42,7 @@ local syncName = {
 
 local firstinferno = true
 local firstignite = true
+local firstbomb = true
 
 ----------------------------
 --      Localization      --
@@ -66,6 +67,7 @@ L:RegisterTranslations("enUS", function() return {
 
 	bomb_bar = "Living Bomb: %s",
 	bomb_bar1 = "Living Bomb: %s",
+	bombnext_bar = "Next Living Bomb",
 	inferno_bar = "Next Inferno",
 	inferno_channel = "Inferno",
 	nextinferno_message = "3 seconds until Inferno!",
@@ -198,6 +200,7 @@ function module:OnSetup()
 	self.started = nil
 	firstinferno = true
 	firstignite = true
+	firstbomb = true
 
 	bombt = 0
 end
@@ -206,6 +209,7 @@ end
 function module:OnEngage()
 	self:Inferno()
 	self:ManaIgnite()
+	self:NextBomb()
 end
 
 -- called after boss is disengaged (wipe(retreat) or victory)
@@ -277,6 +281,7 @@ end
 
 function module:BigWigs_RecvSync(sync, rest, nick)
 	if sync == syncName.bomb then
+		self:NextBomb()
 	elseif sync == syncName.inferno then
 		self:Inferno()
 	elseif sync == syncName.ignite then
@@ -299,15 +304,15 @@ function module:Inferno()
 	if self.db.profile.inferno then
 		self:RemoveBar(L["inferno_bar"])
 		if firstinferno then
-			self:IntervalBar(L["inferno_bar"], timer.earliestNextInferno, timer.latestNextInferno, icon.inferno)
+			self:Bar(L["inferno_bar"], timer.firstInferno, icon.inferno)
 			firstinferno = false
 		else
 			self:Message(L["inferno_message"], "Important")
 			self:Bar(L["inferno_channel"], timer.inferno, icon.inferno)
-			self:DelayedIntervalBar(timer.inferno, L["inferno_bar"], timer.earliestNextInferno - timer.inferno, timer.latestNextInferno - timer.inferno, icon.inferno)
+			self:Bar(L["inferno_bar"], timer.nextInferno, icon.inferno)
 		end
 
-		self:DelayedMessage(timer.earliestNextInferno - 5, L["nextinferno_message"], "Urgent", nil, nil, true)
+		self:DelayedMessage(timer.nextInferno - 5, L["nextinferno_message"], "Urgent", nil, nil, true)
 	end
 
 	firstinferno = false
@@ -317,10 +322,21 @@ function module:ManaIgnite()
 	if self.db.profile.mana then
 		if not firstignite then
 			self:Message(L["ignite_message"], "Important")
-			self:IntervalBar(L["ignite_bar"], timer.earliestIgnite, timer.latestIgnite, icon.ignite)
+			self:Bar(L["ignite_bar"], timer.firstIgnite, icon.ignite)
 		else
-			self:IntervalBar(L["ignite_bar"], timer.earliestFirstIgnite, timer.latestFirstIgnite, icon.ignite)
+			self:Bar(L["ignite_bar"], timer.nextIgnite, icon.ignite)
 		end
 		firstignite = false
+	end
+end
+
+function module:NextBomb()
+	if self.db.profile.bomb then
+		if firtbomb then
+			self:Bar(L["nextbomb_bar"], timer.firstBomb, icon.bomb)
+			firstbomb = false
+		else
+			self:Bar(L["nextbomb_bar"], timer.nextBomb, icon.bomb)
+		end
 	end
 end

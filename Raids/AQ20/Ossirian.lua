@@ -26,7 +26,7 @@ L:RegisterTranslations("enUS", function() return {
 	supremedelaywarn = "Supreme in %d seconds!",
 	debufftrigger = "Ossirian the Unscarred is afflicted by (.+) Weakness.",
 	crystaltrigger = "Ossirian Crystal Trigger begins to cast (.+) Weakness.",
-	crystal_bar = "Weakness cast!"
+	crystal_bar = "Weakness cast!",
 	debuffwarn = "Ossirian now weak to %s!",
 	supreme_bar = "Supreme",
 	expose = "Expose",
@@ -91,7 +91,7 @@ L:RegisterTranslations("deDE", function() return {
 ---------------------------------
 
 -- module variables
-module.revision = 20006 -- To be overridden by the module!
+module.revision = 20007 -- To be overridden by the module!
 module.enabletrigger = module.translatedName -- string or table {boss, add1, add2}
 --module.wipemobs = { L["add_name"] } -- adds which will be considered in CheckForEngage
 module.toggleoptions = {"supreme", "debuff", "bosskill"}
@@ -252,9 +252,11 @@ end
 function module:Debuff(msg)
 	if string.find(msg, L["cyclone_trigger"])then
 		self:Sync(syncName.cyclone)
+		return
 	end
 	if string.find(msg, L["stomp_trigger"])then
 		self:Sync(syncName.warstomp)
+		return
 	end
 	local _, _, debuffName = string.find(msg, L["crystaltrigger"])
 	if debuffName and L:HasReverseTranslation(debuffName) then

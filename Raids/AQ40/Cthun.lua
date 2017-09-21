@@ -173,7 +173,7 @@ L:RegisterTranslations("deDE", function() return {
 ---------------------------------
 
 -- module variables
-module.revision = 20011 -- To be overridden by the module!
+module.revision = 20012 -- To be overridden by the module!
 local eyeofcthun = AceLibrary("Babble-Boss-2.2")["Eye of C'Thun"]
 local cthun = AceLibrary("Babble-Boss-2.2")["C'Thun"]
 module.enabletrigger = {eyeofcthun, cthun} -- string or table {boss, add1, add2}
@@ -190,20 +190,20 @@ local timer = {
 	p1RandomEyeBeams = 6, -- how long does eye of c'thun target the same player at the beginning
 	p1Tentacle = 45,      -- tentacle timers for phase 1
 	p1TentacleStart = 45, -- delay for first tentacles from engage onwards
-	p1GlareStart = 45,    -- delay for first dark glare from engage onwards
+	p1GlareStart = 50,    -- delay for first dark glare from engage onwards
 	p1Glare = 87,         -- interval for dark glare
 	p1GlareCasting = 3,   -- time it takes from casting dark glare until the spell starts
-	p1GlareDuration = 39, -- duration of dark glare
+	p1GlareDuration = 40, -- duration of dark glare
 
 	p2Tentacle = 30,      -- tentacle timers for phase 2
 	p2ETentacle = 60,     -- Eye tentacle timers for phase 2
 	p2GiantClaw = 60,     -- Giant Claw timer for phase 2
-	p2FirstGiantClaw = 12, -- first giant claw after eye of c'thun dies
-	p2FirstGiantEye = 42, -- first giant eye after eye of c'thun dies
-	p2FirstEyeTentacles = 42, -- first eye tentacles after eye of c'thun dies
-	p2FirstGiantClawAfterWeaken = 8,
-	p2FirstGiantEyeAfterWeaken = 38,
-	p2FirstEyeAfterWeaken = 38,
+	p2FirstGiantClaw = 10, -- first giant claw after eye of c'thun dies
+	p2FirstGiantEye = 40, -- first giant eye after eye of c'thun dies
+	p2FirstEyeTentacles = 40, -- first eye tentacles after eye of c'thun dies
+	p2FirstGiantClawAfterWeaken = 0,
+	p2FirstGiantEyeAfterWeaken = 30,
+	p2FirstEyeAfterWeaken = 30,
 
 
 	reschedule = 50,      -- delay from the moment of weakening for timers to restart
@@ -509,6 +509,10 @@ function module:CThunWeakened()
 	self:RemoveBar(L["barGiantC"])
 
 	self:DelayedSync(timer.weakened, syncName.weakenOver)
+	
+	-- next giant claw after weaken
+	self:DelayedBar(timer.weakened - 7, L["barGiantC"], 7, icon.giantClaw)
+	self:DelayedSync(timer.weakened, syncName.giantClawSpawn)
 end
 
 function module:CThunWeakenedOver()
@@ -525,11 +529,9 @@ function module:CThunWeakenedOver()
 		self:Message(L["invulnerable1"], "Important")
 	end
 
-	-- next giant claw 10s after weaken
-	self:Bar(L["barGiantC"], timer.p2FirstGiantClawAfterWeaken, icon.giantClaw)
-	self:DelayedSync(timer.p2FirstGiantClawAfterWeaken, syncName.giantClawSpawn)
-
-	-- next giant eye 40s after weaken
+	
+	
+	-- next giant eye 30s after weaken
 	self:Bar(L["barGiant"], timer.p2FirstGiantEyeAfterWeaken, icon.giantEye)
 	self:DelayedSync(timer.p2FirstGiantEyeAfterWeaken, syncName.giantEyeSpawn)
 	self:DelayedMessage(timer.p2FirstGiantEyeAfterWeaken - 5, L["GiantEye"], "Urgent", false, nil, true)

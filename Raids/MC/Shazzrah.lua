@@ -5,7 +5,7 @@
 
 local module, L = BigWigs:ModuleDeclaration("Shazzrah", "Molten Core")
 
-module.revision = 20004 -- To be overridden by the module!
+module.revision = 20005 -- To be overridden by the module!
 module.enabletrigger = module.translatedName -- string or table {boss, add1, add2}
 module.toggleoptions = {"curse", "deaden", "blink", "counterspell", "bosskill"}
 
@@ -18,7 +18,7 @@ module.toggleoptions = {"curse", "deaden", "blink", "counterspell", "bosskill"}
 ---------------------------------
 
 local timer = {
-	cs = 16,
+	cs = 15,
 	firstCS = 15,
 	curse =  20,
 	firstCurse = 10,
@@ -26,7 +26,7 @@ local timer = {
 	firstBlink = 25,
 	earliestDeaden = 7,
 	latestDeaden = 14,
-	firstDeaden = 5,
+	firstDeaden = 23,
 }
 local icon = {
 	cs = "Spell_Frost_IceShock",

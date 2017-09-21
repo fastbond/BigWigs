@@ -174,7 +174,7 @@ L:RegisterTranslations("deDE", function() return {
 
 -- module variables
 local controller = AceLibrary("Babble-Boss-2.2")["Grethok the Controller"]
-module.revision = 20004 -- To be overridden by the module!
+module.revision = 20005 -- To be overridden by the module!
 module.enabletrigger = {module.translatedName, controller} -- string or table {boss, add1, add2}
 --module.wipemobs = { L["add_name"] } -- adds which will be considered in CheckForEngage
 module.toggleoptions = {"phase", "mobs", "eggs", "polymorph", "mc", "icon", "orb", "fireballvolley", "conflagration", "bosskill"}
@@ -185,10 +185,10 @@ local timer = {
 	mobspawn = 46,
 	mc = 15,
 	polymorph = 20,
-	conflagrate = 15,
-	firstConflagrate = 12,
-	firstVolley = 7,
-	firstWarStomp = 22,
+	conflagrate = 10,
+	firstConflagrate = 10,
+	firstVolley = 20,
+	firstWarStomp = 30,
 	volley = 2,
 	egg = 3,
 	orb = 90,

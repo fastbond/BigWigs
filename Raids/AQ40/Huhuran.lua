@@ -24,6 +24,10 @@ L:RegisterTranslations("enUS", function() return {
 	berserk_cmd = "berserk",
 	berserk_name = "Berserk Alert",
 	berserk_desc = "Warn for Berserk",
+	
+	noxious_cmd = "noxious",
+	noxious_name = "Noxious Poison Alert",
+	noxious_desc = "Warn for Noxious Poison",
 
 	frenzygain_trigger = "Princess Huhuran gains Frenzy.",
 	frenzyend_trigger = "Frenzy fades from Princess Huhuran.",
@@ -39,6 +43,10 @@ L:RegisterTranslations("enUS", function() return {
 	stingwarn = "Wyvern Sting!",
 	stingdelaywarn = "Possible Wyvern Sting in ~3 seconds!",
 	bartext = "Wyvern Sting",
+	noxious_trigger = "is afflicted by Noxious Poison",
+	noxiousself_trigger = "You are afflicted by Noxious Poison",
+	noxiousafflicted_bar = "Silenced",
+	noxiouscd_bar = "Noxious Poison",
 
 	startwarn = "Huhuran engaged, 5 minutes to berserk!",
 	berserkbar = "Berserk",
@@ -87,10 +95,10 @@ L:RegisterTranslations("deDE", function() return {
 ---------------------------------
 
 -- module variables
-module.revision = 20004 -- To be overridden by the module!
+module.revision = 20005 -- To be overridden by the module!
 module.enabletrigger = module.translatedName -- string or table {boss, add1, add2}
 --module.wipemobs = { L["add_name"] } -- adds which will be considered in CheckForEngage
-module.toggleoptions = {"wyvern", "frenzy", "berserk", "bosskill"}
+module.toggleoptions = {"wyvern", "frenzy", "berserk", "noxious", "bosskill"}
 
 
 -- locals
@@ -98,22 +106,37 @@ local timer = {
 	berserk = 300,
 	earliestFirstSting = 18,
 	latestFirstSting = 28,
-	earliestSting = 15,
-	latestSting = 32,
-	earliestFrenzyInterval = 25,
-	latestFrenzyInterval = 35,
+	earliestSting = 18,
+	latestSting = 30,
+	earliestFrenzyInterval = 14,
+	latestFrenzyInterval = 18,
 	frenzy = 8,
+	earliestFirstNoxious = 10,
+	latestFirstNoxious = 14,
+	earliestNoxious = 11,
+	latestNoxious = 15,
+	noxiousDuration = 8,
 }
 local icon = {
 	berserk = "INV_Shield_01",
 	sting = "INV_Spear_02",
 	frenzy = "Ability_Druid_ChallangingRoar",
 	tranquil = "Spell_Nature_Drowsy",
+	noxiousCD = "spell_nature_corrosivebreath",
+	noxiousPriest = "Interface\\Icons\\inv_staff_30",
+	noxiousPaladin = "Spell_Holy_GreaterBlessingofKings",
+	noxiousDruid = "inv_misc_monsterclaw_04",
+	noxiousShaman = "Spell_Nature_Lightning",
 }
 local syncName = {
 	sting = "HuhuranWyvernSting"..module.revision,
 	frenzy = "HuhuranFrenzyGain"..module.revision,
 	frenzyOver = "HuhuranFrenzyFade"..module.revision,
+	noxiousCD = "HuhuranNoxiousCD"..module.revision,
+	noxiousPriest = "HuhuranNoxiousPriest"..module.revision,
+	noxiousPaladin = "HuhuranNoxiousPaladin"..module.revision,
+	noxiousDruid = "HuhuranNoxiousDruid"..module.revision,
+	noxiousShaman = "HuhuranNoxiousShaman"..module.revision,
 }
 
 local berserkannounced = false
@@ -135,6 +158,11 @@ function module:OnEnable()
 	self:RegisterEvent("CHAT_MSG_SPELL_AURA_GONE_OTHER", "FrenzyCheck")
 
 	self:ThrottleSync(5, syncName.sting)
+	self:ThrottleSync(5, syncName.noxiousCD)
+	self:ThrottleSync(0, syncName.noxiousPriest)
+	self:ThrottleSync(0, syncName.noxiousPaladin)
+	self:ThrottleSync(0, syncName.noxiousDruid)
+	self:ThrottleSync(0, syncName.noxiousShaman)
 end
 
 -- called after module is enabled and after each wipe
@@ -157,7 +185,10 @@ function module:OnEngage()
 		self:DelayedMessage(timer.earliestFirstSting - 3, L["stingdelaywarn"], "Urgent", nil, nil, true)
 	end
 	if self.db.profile.frenzy then
-		self:IntervalBar(L["frenzy_Nextbar"], timer.earliestFrenzyInterval, timer.latestFrenzyInterval, icon.frenzy, true, "white")
+		self:IntervalBar(L["frenzy_Nextbar"], timer.earliestFrenzyInterval, timer.latestFrenzyInterval, icon.frenzy, true, "red")
+	end
+	if self.db.profile.noxious then
+		self:IntervalBar(L["noxiouscd_bar"], timer.earliestFirstNoxious, timer.latestFirstNoxious, icon.noxiousCD)
 	end
 end
 
@@ -210,6 +241,20 @@ end
 function module:checkSting(arg1)
 	if string.find(arg1, L["stingtrigger"]) then
 		self:Sync(syncName.sting)
+	elseif string.find(arg1, L["noxiousself_trigger"]) then
+		self:Sync(syncName.noxiousCD)
+		local _, playerClass = UnitClass("player")
+		if playerClass == "PRIEST" then
+			self:Sync(syncName.noxiousPriest)
+		elseif playerClass == "PALADIN" then
+			self:Sync(syncName.noxiousPaladin)
+		elseif playerClass == "DRUID" then
+			self:Sync(syncName.noxiousDruid)
+		elseif playerClass == "SHAMAN" then
+			self:sync(syncName.noxiousShaman)
+		end
+	elseif string.find(msg, L["noxious_trigger"]) then
+		self:Sync(syncName.noxiousCD)
 	end
 end
 
@@ -229,6 +274,16 @@ function module:BigWigs_RecvSync(sync, rest, nick)
 		self:FrenzyGain()
 	elseif sync == syncName.frenzyOver then
 		self:FrenzyFade()
+	elseif sync == syncName.noxiousCD then
+		self:NoxiousCD()
+	elseif sync == syncName.noxiousPriest then
+		self:NoxiousPriest(nick)
+	elseif sync == syncName.noxiousPaladin then
+		self:NoxiousPaladin(nick)
+	elseif sync == syncName.noxiousDruid then
+		self:NoxiousDruid(nick)
+	elseif sync == syncName.noxiousShaman then
+		self:NoxiousShaman(nick)
 	end
 end
 
@@ -257,5 +312,35 @@ function module:FrenzyFade()
 			local latestNextTime = (lastFrenzy + timer.latestFrenzyInterval) - GetTime()
 			self:IntervalBar(L["frenzy_Nextbar"], NextTime, latestNextTime, icon.frenzy, true, "white")
 		end
+	end
+end
+
+function module:NoxiousCD()
+	if self.db.profile.noxious then
+		self:IntervalBar(L["noxiouscd_bar"], timer.earliestNoxious, timer.latestNoxious, icon.noxiousCD, true, "Green")
+	end
+end
+
+function module:NoxiousPriest(nick)
+	if self.db.profile.noxious then
+		self:Bar(L["noxiousafflicted_bar"]..": "..nick, timer.noxiousDuration, icon.noxiousPriest, true, "White")
+	end
+end
+
+function module:NoxiousDruid(nick)
+	if self.db.profile.noxious then
+		self:Bar(L["noxiousafflicted_bar"]..": "..nick, timer.noxiousDuration, icon.noxiousDruid, true, "White")
+	end
+end
+
+function module:NoxiousPaladin(nick)
+	if self.db.profile.noxious then
+		self:Bar(L["noxiousafflicted_bar"]..": "..nick, timer.noxiousDuration, icon.noxiousPaladin, true, "White")
+	end
+end
+
+function module:NoxiousShaman(nick)
+	if self.db.profile.noxious then
+		self:Bar(L["noxiousafflicted_bar"]..": "..nick, timer.noxiousDuration, icon.noxiousShaman, true, "White")
 	end
 end

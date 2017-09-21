@@ -22,8 +22,10 @@ L:RegisterTranslations("enUS", function() return {
 	ms_warn_other = "Mortal Strike on %s!",
 	bw_warn = "Blast Wave soon!",
 	ms_bar = "Mortal Strike: %s",
+	msnext_bar = "Next Mortal Strike",
 	bw_bar = "Blast Wave",
-	knock_bar = "Knock Away",
+	knock_bar = "Knock Away (tank)",
+	knock_trigger = "Lashlayer's Knock Away",
 
 	you = "You",
 	are = "are",
@@ -73,7 +75,7 @@ L:RegisterTranslations("deDE", function() return {
 ---------------------------------
 
 -- module variables
-module.revision = 20004 -- To be overridden by the module!
+module.revision = 20005 -- To be overridden by the module!
 module.enabletrigger = module.translatedName -- string or table {boss, add1, add2}
 --module.wipemobs = { L["add_name"] } -- adds which will be considered in CheckForEngage
 module.toggleoptions = {"ms", "bw", "knock", "bosskill"}
@@ -81,12 +83,15 @@ module.toggleoptions = {"ms", "bw", "knock", "bosskill"}
 
 -- locals
 local timer = {
-	firstBlastWave = 20,
-	earliestBlastWave = 20,
-	latestBlastWave = 35,
+	firstBlastWave = 10,
+	earliestBlastWave = 15,
+	latestBlastWave = 20,
 	mortalStrike = 5,
-	firstMortal = 25,
-	knockAway = 20
+	firstMortal = 18,
+	earliestMortalStrike = 26,
+	latestMortalStrike = 34,
+	firstKnockAway = 12,
+	knockAwayInterval = 13,
 }
 local icon = {
 	blastWave = "Spell_Holy_Excorcism_02",
@@ -98,6 +103,7 @@ local syncName = {}
 local lastBlastWave = 0
 local lastMS = 0
 local MS = ""
+local lastKnock = 0
 
 
 ------------------------------
@@ -120,6 +126,7 @@ function module:OnSetup()
 	self.started = nil
 	lastBlastWave = 0
 	lastMS = 0
+	lastKnock = 0
 	MS = ""
 end
 
@@ -133,7 +140,7 @@ function module:OnEngage()
 		self:Bar("First Mortal Strike", timer.firstMortal, icon.mortalStrike, true, "Black")
 	end
 	if self.db.profile.knock then
-		self:Bar(L["knock_bar"], timer.knockAway, icon.knockAway)
+		self:Bar(L["knock_bar"], timer.firstKnockAway, icon.knockAway)
 	end
 end
 
@@ -151,6 +158,7 @@ function module:Event(msg)
 	if name and detect and self.db.profile.ms then
 		MS = name
 		lastMS = GetTime()
+		self:IntervalBar(L["msnext_bar"], timer.earliestMortalStrike, timer.latestMortalStrike, icon.mortalStrike)
 		if detect == L["are"] then
 			self:Message(L["ms_warn_you"], "Core", true, "Beware")
 			self:Bar(string.format(L["ms_bar"], UnitName("player")), timer.mortalStrike, icon.mortalStrike, true, "Black")
@@ -167,6 +175,11 @@ function module:Event(msg)
 			--self:ScheduleEvent("BigWigs_Message", 24, L["bw_warn"], "Urgent", true, "Alert")
 		end
 		lastBlastWave = GetTime()
+	elseif string.find(msg, L["knock_trigger"]) and self.db.profile.knock then
+		if GetTime() - lastKnock > 5 then
+			self:Bar(L["knock_bar"], timer.knockAwayInterval, icon.knockAway, true, "White")
+		end
+		lastKnock = GetTime()
 	end
 end
 

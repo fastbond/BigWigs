@@ -92,7 +92,7 @@ L:RegisterTranslations("deDE", function() return {
 ---------------------------------
 
 -- module variables
-module.revision = 20006 -- To be overridden by the module!
+module.revision = 20007 -- To be overridden by the module!
 module.enabletrigger = module.translatedName -- string or table {boss, add1, add2}
 module.toggleoptions = {"summon", "explode", "enrage", -1, "plagueyou", "plagueother", "icon"--[[, "bosskill"]]}
 
@@ -102,7 +102,9 @@ module.defaultDB = {
 
 -- locals
 local timer = {}
-local icon = {}
+local icon = {
+	plague = "Spell_Shadow_CurseOfTounges",
+}
 local syncName = {}
 
 
@@ -168,6 +170,7 @@ function module:CheckPlague( msg )
 		if self.db.profile.plagueyou and player == L["plagueyou"] and type == L["plagueare"] then
 			self:Message(L["plaguewarnyou"], "Personal", true)
 			self:Message(UnitName("player") .. L["plaguewarn"], "Attention", nil, nil, true )
+			self:WarningSign(icon.plague, 5)
 		elseif self.db.profile.plagueother then
 			self:Message(player .. L["plaguewarn"], "Attention")
 			self:TriggerEvent("BigWigs_SendTell", player, L["plaguewarnyou"])

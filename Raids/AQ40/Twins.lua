@@ -152,8 +152,7 @@ module.toggleoptions = {"bug", "teleport", "enrage", "heal", "blizzard", "bosski
 
 -- locals
 local timer = {
-	earliestTeleport = 30,
-	latestTeleport = 40,
+	teleport = 30,
 	enrage = 900,
 	blizzard = 10,
 }
@@ -164,7 +163,6 @@ local icon = {
 }
 local syncName = {
 	teleport = "TwinsTeleport"..module.revision,
-	teleport_old = "TwinsTeleport"..module.revision,
 }
 
 local berserkannounced = nil
@@ -193,7 +191,7 @@ function module:OnEnable()
 	self:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_CREATURE_BUFFS")
 	self:RegisterEvent("CHAT_MSG_SPELL_CREATURE_VS_CREATURE_BUFF")
 
-	self:ThrottleSync(28, syncName.teleport)
+	self:ThrottleSync(20, syncName.teleport)
 end
 
 -- called after module is enabled and after each wipe
@@ -257,7 +255,6 @@ end
 
 function module:CHAT_MSG_SPELL_PERIODIC_CREATURE_BUFFS(msg)
 	if (string.find(msg, L["porttrigger"])) then
-		self:Sync(syncName.teleport_old)
 		self:Sync(syncName.teleport)
 		self:DebugMessage("real port trigger")
 	end
@@ -297,10 +294,8 @@ end
 
 function module:Teleport()
 	if self.db.profile.teleport then
-		self:IntervalBar(L["bartext"], timer.earliestTeleport, timer.latestTeleport, icon.teleport)
+		self:Bar(L["bartext"], timer.teleport, icon.teleport)
 
-		--self:DelayedSync(timer.teleport, syncName.teleport_old)
-		--self:DelayedSync(timer.teleport, syncName.teleport)
 		self:KTM_Reset()
 
 		self:DelayedSound(timer.earliestTeleport - 10, "Ten")

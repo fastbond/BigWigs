@@ -119,12 +119,12 @@ module.toggleoptions = {"start", "flamebreath", "adrenaline", "whisper", "tankbu
 
 -- locals
 local timer = {
-	adrenaline = 15,
+	adrenaline = 20,
 	flamebreath = 2,
 	tankburn = 45,
 	start1 = 36,
-	start2 = 26,
-	start3 = 10,
+	start2 = 27,
+	start3 = 15,
 }
 local icon = {
 	adrenaline = "INV_Gauntlets_03",

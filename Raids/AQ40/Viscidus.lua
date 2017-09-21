@@ -94,7 +94,7 @@ L:RegisterTranslations("deDE", function() return {
 ---------------------------------
 
 -- module variables
-module.revision = 20007 -- To be overridden by the module!
+module.revision = 20008 -- To be overridden by the module!
 module.enabletrigger = module.translatedName -- string or table {boss, add1, add2}
 --module.wipemobs = { L["add_name"] } -- adds which will be considered in CheckForEngage
 module.toggleoptions = {"freeze", "volley", "toxinyou", "toxinother", "bosskill"}
@@ -102,8 +102,8 @@ module.toggleoptions = {"freeze", "volley", "toxinyou", "toxinother", "bosskill"
 
 -- locals
 local timer = {
-	earliestVolley = 10,
-	latestVolley = 15,
+	earliestVolley = 9,
+	latestVolley = 10,
 }
 local icon = {
 	volley = "Spell_Nature_CorrosiveBreath",

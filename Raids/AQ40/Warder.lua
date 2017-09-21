@@ -50,16 +50,16 @@ L:RegisterTranslations("enUS", function() return {
 	dustBar_next = "Possible Dust Cloud",
 
 	dustWarn = "Dust Cloud",
-	dustWarn2 = "(Roots or Fear)",
+	dustWarn2 = "(Roots or Fear)", --dust cloud/roots, dust cloud/fear confirmed
 
 	fearWarn = "Fear",
-	fearWarn2 = "(Silence or Dust Cloud)",
+	fearWarn2 = "(Silence or Dust Cloud)", --fear/dust cloud confirmed
 
 	rootsWarn = "Roots",
-	rootsWarn2 = "(Silence or Dust Cloud)",
+	rootsWarn2 = "(Silence or Dust Cloud)", --roots/silence, roots/dust cloud confirmed
 
 	silenceWarn = "Silence",
-	silenceWarn2 = "(Roots or Fear)",
+	silenceWarn2 = "(Roots or Fear)", --silence/roots confirmed
 
 } end )
 
@@ -68,20 +68,24 @@ L:RegisterTranslations("enUS", function() return {
 ---------------------------------
 
 -- module variables
-module.revision = 20001 -- To be overridden by the module!
+module.revision = 20002 -- To be overridden by the module!
 module.enabletrigger = module.translatedName -- string or table {boss, add1, add2}
 --module.wipemobs = { L["add_name"] } -- adds which will be considered in CheckForEngage
 module.toggleoptions = {"fear", "silence", "roots", "dust", "warnings"--[[, "bosskill"]]}
 
 -- locals
 local timer = {
-	fear = 20,
+	earliestFear = 14,
+	latestFear = 19,
 	fearCast = 1.5,
-	silence = 15,
+	earliestSilence = 14,
+	latestSilence = 19,
 	silenceCast = 1.5,
-	roots = 15,
+	earliestRoots = 7,
+	latestRoots = 12,
 	rootsCast = 1.5,
-	dust = 15,
+	earliestDust = 14,
+	latestDust = 19,
 	dustCast = 1.5,
 }
 local icon = {
@@ -115,9 +119,9 @@ function module:OnEnable()
 		}
 	end
 
-	self:ThrottleSync(10, syncName.fear)
-	self:ThrottleSync(10, syncName.silence)
-	self:ThrottleSync(10, syncName.roots)
+	self:ThrottleSync(6, syncName.fear)
+	self:ThrottleSync(6, syncName.silence)
+	self:ThrottleSync(3, syncName.roots)
 end
 
 -- called after module is enabled and after each wipe
@@ -160,28 +164,28 @@ function module:BigWigs_RecvSync( sync, rest, nick )
 		if self.db.profile.fear then
 			self:RemoveBar(L["fearBar_next"])
 			self:Bar(L["fearBar"], timer.fearCast, icon.fear)
-			self:DelayedBar(timer.fearCast, L["fearBar_next"], timer.fear-timer.fearCast, icon.fear)
+			self:DelayedIntervalBar(timer.fearCast, L["fearBar_next"], timer.earliestFear-timer.fearCast, timer.latestFear-timer.fearCast, icon.fear)
 		end
 		self:AbilityWarn("fear")
 	elseif sync == syncName.silence then
 		if self.db.profile.silence then
 			self:RemoveBar(L["silenceBar_next"])
 			self:Bar(L["silenceBar"], timer.silenceCast, icon.silence)
-			self:DelayedBar(timer.silenceCast, L["silenceBar_next"], timer.silence-timer.silenceCast, icon.silence)
+			self:DelayedIntervalBar(timer.silenceCast, L["silenceBar_next"], timer.earliestSilence-timer.silenceCast, timer.latestSilence-timer.silenceCast, icon.silence)
 		end
 		self:AbilityWarn("silence")
 	elseif sync == syncName.roots then
 		if self.db.profile.roots then
 			self:RemoveBar(L["rootsBar_next"])
 			self:Bar(L["rootsBar"], timer.rootsCast, icon.roots)
-			self:DelayedBar(timer.rootsCast, L["rootsBar_next"], timer.roots-timer.rootsCast, icon.roots)
+			self:DelayedIntervalBar(timer.rootsCast, L["rootsBar_next"], timer.earliestRoots-timer.rootsCast, timer.latestRoots-timer.rootsCast, icon.roots)
 		end
 		self:AbilityWarn("roots")
 	elseif sync == syncName.dust then
 		if self.db.profile.dust then
 			self:RemoveBar(L["dustBar_next"])
 			self:Bar(L["dustBar"], timer.dustCast, icon.dust)
-			self:DelayedBar(timer.dustCast, L["dustBar_next"], timer.dust-timer.dustCast, icon.dust)
+			self:DelayedIntervalBar(timer.dustCast, L["dustBar_next"], timer.earliestDust-timer.dustCast, timer.latestDust-timer.dustCast, icon.dust)
 		end
 		self:AbilityWarn("dust")
 	end

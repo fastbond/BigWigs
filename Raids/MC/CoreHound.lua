@@ -5,7 +5,7 @@
 
 local module, L = BigWigs:ModuleDeclaration("Ancient Core Hound", "Molten Core")
 
-module.revision = 20001
+module.revision = 20002
 module.enabletrigger = module.translatedName
 module.toggleoptions = {"bars"--[[, "bosskill"]]}
 
@@ -14,7 +14,8 @@ module.toggleoptions = {"bars"--[[, "bosskill"]]}
 ------------------------------
 
 local timer = {
-	firstDebuff = 12,
+	earliestFirstDebuff = 7,
+	latestFirstDebuff = 12,
 	debuff = 14,
 }
 local icon = {
@@ -100,7 +101,7 @@ end
 -- called after boss is engaged
 function module:OnEngage()
 	if self.db.profile.bars then
-		self:Bar(L["Debuff"], timer.firstDebuff, icon.debuff)
+		self:IntervalBar(L["Debuff"], timer.earliestFirstDebuff, timer.latestFirstDebuff, icon.debuff)
 	end
 end
 
@@ -120,7 +121,8 @@ function module:Debuff(msg)
 		t2 = string.format(L["trigger2"], v)
 		t3 = string.format(L["trigger3"], v)
 		if ((string.find(msg, t1)) or (string.find(msg, t2)) or (string.find(msg, t3))) then
-			self:Sync(syncName.debuff)
+			self:RemoveBar(L["Debuff"])
+			--self:Sync(syncName.debuff)
 		end
 	end
 end

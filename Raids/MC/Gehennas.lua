@@ -18,8 +18,8 @@ module.defaultDB = {
 ---------------------------------
 
 local timer = {
-	firstCurse = 8,
-	firstRain = 7,
+	firstCurse = 12,
+	firstRain = 10,
 	rainTick = 2,
 	rainDuration = 6,
 	nextRain = 19, -- 12, 18

@@ -23,8 +23,8 @@ L:RegisterTranslations("enUS", function() return {
 	attack_trigger2 = "Princess Yauj misses",
 	attack_trigger3 = "Princess Yauj hits",
 	attack_trigger4 = "Princess Yauj crits",
-	panic_bar = "Panic",
-	first_panic_bar = "Possible Panic",
+	panic_bar = "Fear",
+	first_panic_bar = "Possible Fear",
 	panic_message = "Fear in 3 Seconds!",
 	toxicvolleyhit_trigger = "Toxic Volley hits",
 	toxicvolleyafflicted_trigger = "afflicted by Toxic Volley\.",
@@ -33,15 +33,15 @@ L:RegisterTranslations("enUS", function() return {
 	toxicvolley_bar = "Toxic Volley",
 	toxicvolley_message = "Toxic Volley in 3 Seconds!",
 
-	panic_trigger = "afflicted by Panic%.",
-	panicresist_trigger = "Panic was resisted",
-	panicimmune_trigger = "Panic fail(.+) immune",
+	panic_trigger = "afflicted by Fear%.",
+	panicresist_trigger = "Princess Yauj's Fear was resisted",
+	panicimmune_trigger = "Princess Yauj's Fear fail(.+) immune",
 
 	toxicvaporsyou_trigger = "You are afflicted by Toxic Vapors\.",
 	toxicvaporsother_trigger = "(.+) is afflicted by Toxic Vapors\.",
 
-	toxicvaporsyou_trigger2 = "You suffer (%d+) (.+) from Lord Kri's Toxic Vapors.",
-	toxicvaporsother_trigger2 = "(.+) suffers (%d+) (.+) from Lord Kri's Toxic Vapors.",
+	toxicvaporsyou_trigger2 = "You suffer (%d+) (.+) from Poison Cloud's Toxic Vapors.",
+	toxicvaporsother_trigger2 = "(.+) suffers (%d+) (.+) from Poison Cloud's Toxic Vapors.",
 
 	toxicvapors_message = "Move away from the Poison Cloud!",
 	enrage_bar = "Enrage",
@@ -62,7 +62,7 @@ L:RegisterTranslations("enUS", function() return {
 
 	panic_cmd = "panic",
 	panic_name = "Fear",
-	panic_desc = "Warn for Princess Yauj's Panic.",
+	panic_desc = "Warn for Princess Yauj's Fear.",
 
 	toxicvolley_cmd = "toxicvolley",
 	toxicvolley_name = "Toxic Volley",
@@ -157,7 +157,7 @@ L:RegisterTranslations("deDE", function() return {
 ---------------------------------
 
 -- module variables
-module.revision = 20007 -- To be overridden by the module!
+module.revision = 20008 -- To be overridden by the module!
 module.enabletrigger = {kri, yauj, vem} -- string or table {boss, add1, add2}
 --module.wipemobs = { L["add_name"] } -- adds which will be considered in CheckForEngage
 module.toggleoptions = {"panic", "toxicvolley", "heal", "announce", "deathspecials", "enrage", "bosskill"}
@@ -165,13 +165,10 @@ module.toggleoptions = {"panic", "toxicvolley", "heal", "announce", "deathspecia
 
 -- locals
 local timer = {
-	earliestFirstPanic = 10,
-	latestFirstPanic = 20,
+	firstPanic = 20,
 	panic = 20,
-	earliestFirstVolley = 8,
-	latestFirstVolley = 10,
-	earliestVolley = 8,
-	latestVolley = 14,
+	firstVolley = 11,
+	volley = 10,
 	enrage = 900,
 	heal = 2,
 }
@@ -252,11 +249,11 @@ end
 -- called after boss is engaged
 function module:OnEngage()
 	if self.db.profile.panic then
-		self:IntervalBar(L["first_panic_bar"], timer.earliestFirstPanic, timer.latestFirstPanic, icon.panic, true, "white")
+		self:Bar(L["first_panic_bar"], timer.firstPanic, icon.panic, true, "white")
 		--self:DelayedMessage(timer.firstPanic - 3, L["panic_message"], "Urgent", true, "Alarm")
 	end
 	if self.db.profile.toxicvolley then
-		self:IntervalBar(L["toxicvolley_bar"], timer.earliestFirstVolley, timer.latestFirstVolley, icon.volley, true, "green")
+		self:Bar(L["toxicvolley_bar"], timer.volley, icon.volley, true, "green")
 		self:DelayedMessage(timer.earliestFirstVolley - 3, L["toxicvolley_message"], "Urgent")
 	end
 	if self.db.profile.enrage then
@@ -364,7 +361,7 @@ end
 
 function module:Volley()
 	if self.db.profile.toxicvolley then
-		self:IntervalBar(L["toxicvolley_bar"], timer.earliestVolley, timer.latestVolley, icon.volley, true, "green")
+		self:Bar(L["toxicvolley_bar"], timer.earliestVolley, timer.latestVolley, icon.volley, true, "green")
 		--self:DelayedMessage(timer.firstVolley - 3, L["toxicvolley_message"], "Urgent")
 	end
 end

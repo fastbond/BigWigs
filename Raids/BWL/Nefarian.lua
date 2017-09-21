@@ -12,8 +12,8 @@ local victor = AceLibrary("Babble-Boss-2.2")["Lord Victor Nefarius"]
 
 L:RegisterTranslations("enUS", function() return {
 	engage_trigger = "Let the games begin!",
-	landing_trigger = "Enough! Now you",
-	landingNOW_trigger = "courage begins to wane",
+	landed_trigger = "BURN! You wretches",
+	landingSOON_trigger = "courage begins to wane",
 	zerg_trigger = "Impossible! Rise my",
 	fear_trigger = "Nefarian begins to cast Bellowing Roar",
 	fear_over_trigger = "Bellowing Roar",
@@ -37,11 +37,13 @@ L:RegisterTranslations("enUS", function() return {
 	triggermage		= "Mages too%?",
 
 	landing_warning = "Nefarian is landing!",
+	landed_warning = "Nefarian has Landed!",
 	zerg_warning = "Zerg incoming!",
 	fear_warning = "Fear in 2 sec!",
 	fear_soon_warning = "Possible fear in ~5 sec",
 	shadowflame_warning = "Shadow Flame incoming!",
 	shadowflame_bar = "Shadow Flame",
+	shadowflamecast_bar = "Shadow Flame INC!",
 	classcall_warning = "Class call incoming!",
 
 	warnshaman	= "Shamans - Totems spawned!",
@@ -104,8 +106,8 @@ L:RegisterTranslations("enUS", function() return {
 
 L:RegisterTranslations("deDE", function() return {
 	engage_trigger = "Lasst die Spiele beginnen!",
-	landing_trigger = "GENUG! Nun sollt ihr Ungeziefer",
-	landingNOW_trigger = "Der Mut der Sterblichen scheint zu schwinden",
+	landed_trigger = "GENUG! Nun sollt ihr Ungeziefer",
+	landingSOON_trigger = "Der Mut der Sterblichen scheint zu schwinden",
 	zerg_trigger = "Unmöglich! Erhebt Euch, meine Diener!",
 	fear_trigger = "Nefarian beginnt Dröhnendes Gebrüll zu wirken.",
 	fear_over_trigger = "Dröhnendes Gebrüll",
@@ -200,20 +202,18 @@ module.toggleoptions = {"curse", "mc", "shadowflame", "fear", "classcall", "othe
 -- locals
 local timer = {
 	mobspawn = 10,
-	earliestClasscall = 25,
-	latestClasscall = 35,
+	firstClasscall = 35,
+	classcallInterval = 30,
 	mc = 15,
-	shadowflame = 18,
+	landingShadowflame = 10,
+	firstShadowflame = 15,
+	shadowflame = 12,
 	shadowflameCast = 2,
-	earliestFear = 25,
-	latestFear = 30,
+	fear = 30,
 	fearCast = 1.5,
-	landing = 13,
-	firstClasscall = 25,
-	--firstFear = 25,
-	firstCurse = 15,
-	earliestCurse = 10,
-	latestCurse = 15,
+	landing = 12,
+	firstCurse = 17,
+	curseInterval = 15,
 }
 local icon = {
 	mobspawn = "Spell_Holy_PrayerOfHealing",
@@ -227,7 +227,8 @@ local icon = {
 local syncName = {
 	shadowflame = "NefarianShadowflame"..module.revision,
 	fear = "NefarianFear"..module.revision,
-	landing = "NefarianLandingNOW"..module.revision,
+	landing = "NefarianLandingSOON"..module.revision,
+	landed = "NefarianLanded"..module.revision,
 	addDead = "NefCounter"..module.revision,
 	curse = "NefarianCurse"..module.revision
 }
@@ -266,7 +267,6 @@ function module:OnEnable()
 			[L["triggerrogue"]] = {L["warnrogue"], true},
 			[L["triggerpaladin"]] = {L["warnpaladin"], true},
 			[L["triggermage"]] = {L["warnmage"], true},
-			[L["landing_trigger"]] = {L["landing_warning"]},
 			[L["zerg_trigger"]] = {L["zerg_warning"]},
 		}
 	end
@@ -328,10 +328,12 @@ function module:CHAT_MSG_MONSTER_YELL(msg)
 		self:DebugMessage("SendEngageSync")
 		self:SendEngageSync()
 	end
-	if string.find(msg, L["landingNOW_trigger"]) then
+	if string.find(msg, L["landingSOON_trigger"]) then
 		self:Sync(syncName.landing)
 	end
-
+	if string.find(msg, L["landed_trigger"]) then
+		self:Sync(syncName.landed)
+	end
 	for i,v in pairs(warnpairs) do
 		if string.find(msg, i) then
 			if v[2] then
@@ -348,16 +350,14 @@ function module:CHAT_MSG_MONSTER_YELL(msg)
 						self:Message(v[1], "Core", nil, "Long")
 					end
 
-					self:IntervalBar(v[1], timer.earliestClasscall, timer.latestClasscall, icon.classcall)
-					self:DelayedMessage(timer.earliestClasscall - 3, L["classcall_warning"], "Important")
-					self:DelayedSound(timer.earliestClasscall - 3, "Three")
-					self:DelayedSound(timer.earliestClasscall - 2, "Two")
-					self:DelayedSound(timer.earliestClasscall - 1, "One")
+					self:Bar(v[1], timer.classcall, icon.classcall)
+					self:DelayedMessage(timer.classcall - 3, L["classcall_warning"], "Important")
+					self:DelayedSound(timer.classcall - 3, "Three")
+					self:DelayedSound(timer.classcall - 2, "Two")
+					self:DelayedSound(timer.classcall - 1, "One")
 				end
 			else
-				if self.db.profile.otherwarn and string.find(msg, L["landing_trigger"]) then
-				--self:Message(v[1], "Important", true, "Long")  --- threw this when boss was 5%
-				elseif self.db.profile.otherwarn and string.find(msg, L["zerg_trigger"]) then
+				if self.db.profile.otherwarn and string.find(msg, L["zerg_trigger"]) then
 					self:Message(v[1], "Important", true, "Long")
 				end
 			end
@@ -405,6 +405,8 @@ function module:BigWigs_RecvSync(sync, rest, nick)
 		self:Fear()
 	elseif sync == syncName.landing then
 		self:Landing()
+	elseif sync == syncName.landed then
+		self:Landed()
 	elseif sync == syncName.addDead and rest then
 		self:NefCounter(rest)
 	elseif sync == syncName.curse then
@@ -417,13 +419,14 @@ end
 ------------------------------
 function module:Curse()
 	if self.db.profile.curse then
-		self:IntervalBar(L["curse_bar"], timer.earliestCurse, timer.latestCurse, icon.curse)
+		self:Bar(L["curse_bar"], timer.curseInterval, icon.curse)
 	end
 end
 
 function module:Shadowflame()
 	if self.db.profile.shadowflame then
-		self:Bar(L["shadowflame_bar"], timer.shadowflameCast, icon.shadowflame) -- show cast bar
+		self:RemoveBar(L["shadowflame_bar"]) --remove timer bar
+		self:Bar(L["shadowflamecast_bar"], timer.shadowflameCast, icon.shadowflame) -- show cast bar
 		self:Message(L["shadowflame_warning"], "Important", true, "Alarm")
 		self:DelayedBar(timer.shadowflameCast, L["shadowflame_bar"], timer.shadowflame-timer.shadowflameCast, icon.shadowflame) -- delayed timer bar
 	end
@@ -434,9 +437,19 @@ function module:Fear()
 		self:RemoveBar(L["fear_bar"]) -- remove timer bar
 		self:Message(L["fear_warning"], "Important", true, "Alert")
 		self:Bar(L["fear_warn"], timer.fearCast, icon.fear) -- show cast bar
-		self:DelayedIntervalBar(timer.fearCast, L["fear_bar"], timer.earliestFear, timer.latestFear, icon.fear) -- delayed timer bar
+		self:DelayedBar(timer.fearCast, L["fear_bar"], timer.fear-timer.fearCast, icon.fear) -- delayed timer bar
 		--self:WarningSign(icon.fear, 5)
 	end
+end
+
+function module:Landed()
+	self:Bar(L["classcall_bar"], timer.firstClasscall, icon.classcall)
+	self:Bar(L["fear_bar"], timer.fear, icon.fear)
+	self:Bar(L["curse_bar"], timer.firstCurse, icon.curse)
+	self:Bar(L["shadowflame_bar"], timer.firstShadowflame, icon.shadowflame)
+	self:Message(L["landed_warning"], "Attention")
+	self:KTM_SetTarget(self:ToString())
+	self:KTM_Reset()
 end
 
 function module:Landing()
@@ -444,21 +457,10 @@ function module:Landing()
 		self.phase2 = true
 		self:RemoveBar(L["land"])
 		self:TriggerEvent("BigWigs_StopCounterBar", self, L["Drakonids dead"])
-
+		
+		self:Bar(L["shadowflamecast_bar"], timer.landingShadowflame, icon.shadowflame)
 		self:Bar(L["landing_warning"], timer.landing, icon.landing)
 		self:Message(L["landing_warning"], "Important", nil, "Beware")
-
-		-- landing in 15s
-		self:DelayedIntervalBar(timer.landing, L["classcall_bar"], timer.earliestClasscall, timer.latestClasscall, icon.classcall)
-		self:DelayedIntervalBar(timer.landing, L["fear_bar"], timer.earliestFear, timer.latestFear, icon.fear)
-		self:DelayedBar(timer.landing, L["curse_bar"], timer.firstCurse, icon.curse)
-
-		-- set ktm
-		local function setKTM()
-			self:KTM_SetTarget(self:ToString())
-			self:KTM_Reset()
-		end
-		self:ScheduleEvent("bwnefarianktm", setKTM, timer.landing + 1, self)
 	end
 end
 

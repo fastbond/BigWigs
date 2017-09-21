@@ -5,7 +5,7 @@
 
 local module, L = BigWigs:ModuleDeclaration("Sulfuron Harbinger", "Molten Core")
 
-module.revision = 20007 -- To be overridden by the module!
+module.revision = 20008 -- To be overridden by the module!
 module.enabletrigger = module.translatedName -- string or table {boss, add1, add2}
 module.toggleoptions = {"heal", "adds", "knockback", "bosskill"}
 
@@ -18,7 +18,7 @@ module.defaultDB = {
 ---------------------------------
 
 local timer = {
-	knockback = 12,
+	knockback = 14,
 	firstKnockback = 6,
 	heal = 2,
 	flame_spear = 12,

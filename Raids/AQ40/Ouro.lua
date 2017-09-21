@@ -42,14 +42,13 @@ L:RegisterTranslations("enUS", function() return {
 	sandblasttrigger = "Ouro begins to perform Sand Blast",
 	sandblastannounce = "Incoming Sand Blast!",
 	sandblastwarn = "5 seconds until Sand Blast!",
-	sandblastbartext = "Possible Sand Blast",
+	sandblastbartext = "Sand Blast",
 
 	engage_message = "Ouro engaged! Possible Submerge in 90sec!",
 	possible_submerge_bar = "Possible submerge",
 
 	--emergetrigger = "Dirt Mound casts Summon Ouro Scarabs.",
 	emergetrigger = "Ground Rupture",
-
 	emergeannounce = "Ouro has emerged!",
 	emergewarn = "15 sec to possible submerge!",
 	emergebartext = "Ouro submerge",
@@ -118,7 +117,7 @@ L:RegisterTranslations("deDE", function() return {
 ---------------------------------
 
 -- module variables
-module.revision = 20009 -- To be overridden by the module!
+module.revision = 20010 -- To be overridden by the module!
 module.enabletrigger = module.translatedName -- string or table {boss, add1, add2}
 --module.wipemobs = { L["add_name"] } -- adds which will be considered in CheckForEngage
 module.toggleoptions = {"sweep", "sandblast", -1, "emerge", "submerge", -1, "berserk", "bosskill"}
@@ -126,17 +125,14 @@ module.toggleoptions = {"sweep", "sandblast", -1, "emerge", "submerge", -1, "ber
 
 -- locals
 local timer = {
-	nextSubmerge = 59,
+	nextSubmerge = 90,
 	sweep = 1.5,
-	earliestFirstSweep = 30,
-	latestFirstSweep = 40,
-	sweepInterval = 15,
+	firstSweep = 20,
+	sweepInterval = 20,
 	sandblast = 2,
-	earliestFirstSandblast = 30,
-	latestFirstSandblast = 45,
-	latestSandblastInterval = 12,
-	earliestSandblastInterval = 17,
-	nextEmerge = 27,
+	firstSandblast = 25,
+	sandblastInterval = 25,
+	nextEmerge = 30,
 }
 local icon = {
 	sweep = "Spell_Nature_Thorns",
@@ -194,12 +190,12 @@ function module:OnEngage()
 		self:PossibleSubmerge()
 	end
 	if self.db.profile.sandblast then
-		self:DelayedMessage(timer.earliestFirstSandblast - 5, L["sandblastwarn"], "Important", nil, nil, true)
-		self:IntervalBar(L["sandblastbartext"], timer.earliestFirstSandblast, timer.latestFirstSandblast, icon.sandblast)
+		self:DelayedMessage(timer.firstSandblast - 5, L["sandblastwarn"], "Important", nil, nil, true)
+		self:Bar(L["sandblastbartext"], timer.firstSandblast, icon.sandblast)
 	end
 	if self.db.profile.sweep then
-		self:DelayedMessage(timer.earliestFirstSweep - 5, L["sweepwarn"], "Important", nil, nil, true)
-		self:IntervalBar(L["sweepbartext"], timer.earliestFirstSweep, timer.latestFirstSweep, icon.sweep)
+		self:DelayedMessage(timer.firstSweep - 5, L["sweepwarn"], "Important", nil, nil, true)
+		self:Bar(L["sweepbartext"], timer.firstSweep, icon.sweep)
 	end
 end
 
@@ -294,8 +290,8 @@ function module:Sandblast()
 		self:RemoveBar(L["sandblastbartext"]) -- remove timer bar
 		self:Bar(L["sandblastannounce"], timer.sandblast, icon.sandblast) -- show cast bar
 		self:Message(L["sandblastannounce"], "Important", true, "Alert")
-		self:DelayedMessage(timer.earliestSandblastInterval - 5, L["sandblastwarn"], "Important", nil, nil, true)
-		self:DelayedIntervalBar(timer.sandblast, L["sandblastbartext"], timer.earliestSandblastInterval-timer.sandblast, timer.latestSandblastInterval-timer.sandblast, icon.sandblast) -- delayed timer bar
+		self:DelayedMessage(timer.sandblastInterval - 5, L["sandblastwarn"], "Important", nil, nil, true)
+		self:DelayedBar(timer.sandblast, L["sandblastbartext"], timer.sandblastInterval-timer.sandblast, icon.sandblast) -- delayed timer bar
 	end
 end
 
@@ -323,8 +319,8 @@ function module:Emerge()
 		end
 
 		if self.db.profile.sandblast then
-			self:DelayedMessage(timer.earliestSandblastInterval - 5, L["sandblastwarn"], "Important", nil, nil, true)
-			self:IntervalBar(L["sandblastbartext"], timer.earliestSandblastInterval, timer.latestSandblastInterval, icon.sandblast)
+			self:DelayedMessage(timer.sandblastInterval - 5, L["sandblastwarn"], "Important", nil, nil, true)
+			self:IntervalBar(L["sandblastbartext"], timer.sandblastInterval, icon.sandblast)
 		end
 	end
 end

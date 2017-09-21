@@ -5,7 +5,7 @@
 
 local module, L = BigWigs:ModuleDeclaration("Magmadar", "Molten Core")
 
-module.revision = 20004 -- To be overridden by the module!
+module.revision = 20005 -- To be overridden by the module!
 module.enabletrigger = module.translatedName -- string or table {boss, add1, add2}
 module.toggleoptions = {"panic", "frenzy", "bosskill"}
 
@@ -17,9 +17,10 @@ module.toggleoptions = {"panic", "frenzy", "bosskill"}
 local timer = {
 	earliestPanic = 30,
 	latestPanic = 35,
-	firstPanicDelay = 10 - 30,
+	firstPanicDelay = 7 - 30,
 	frenzy = 8,
-	firstFrenzy = 15
+	firstFrenzy = 30,
+	nextFrenzy = 15,
 }
 local icon = {
 	panic = "Spell_Shadow_DeathScream",
@@ -34,7 +35,7 @@ local syncName = {
 
 
 local _, playerClass = UnitClass("player")
-
+local lastFrenzy = 0
 
 ----------------------------
 --      Localization      --
@@ -47,6 +48,7 @@ L:RegisterTranslations("enUS", function() return {
 	panic_trigger2 = "Panic fail(.+) immune.",
 	panic_trigger3 = "Magmadar's Panic was resisted",
 	frenzy_bar = "Frenzy",
+	frenzynext_bar = "Next Frenzy",
 	frenzyfade_trigger = "Frenzy fades from Magmadar",
 
 	-- Warnings and bar texts
@@ -111,12 +113,13 @@ end
 
 -- called after module is enabled and after each wipe
 function module:OnSetup()
+	lastFrenzy = 0
 end
 
 -- called after boss is engaged
 function module:OnEngage()
 	self:Panic(timer.firstPanicDelay) -- 20s earlier than normal
-	self:Bar(L["frenzy_bar"], timer.firstFrenzy, icon.frenzy, true, "red")
+	self:Bar(L["frenzynext_bar"], timer.firstFrenzy, icon.frenzy, true, "red")
 end
 
 -- called after boss is disengaged (wipe(retreat) or victory)
@@ -193,9 +196,13 @@ function module:Frenzy()
 		if playerClass == "HUNTER" then
 			self:WarningSign(icon.tranquil, timer.frenzy, true)
 		end
+		lastFrenzy = GetTime()
 	end
 end
 function module:FrenzyOver()
 	self:RemoveBar(L["frenzy_bar"])
 	self:RemoveWarningSign(icon.tranquil, true)
+	if lastFrenzy ~=0 then
+		self:Bar(L["frenzynext_bar"], lastFrenzy + nextFrenzy - GetTime(), icon.frenzy, true, "White")
+	end
 end

@@ -40,7 +40,10 @@ L:RegisterTranslations("enUS", function() return {
 	deadaddtrigger = "Sartura's Royal Guard dies.",
 	deadbosstrigger = "Battleguard Sartura dies.",
 	addmsg = "%d/3 Sartura's Royal Guards dead!",
-
+	knockback_message = "Knockback in 10",
+	knockback_warn = "Possible knockback soon!",
+	knockbackbartext = "Knockback!",
+	
 	adds_cmd = "adds",
 	adds_name = "Dead adds counter",
 	adds_desc = "Announces dead Sartura's Royal Guards.",
@@ -56,6 +59,10 @@ L:RegisterTranslations("enUS", function() return {
 	whirlwind_cmd = "whirlwind",
 	whirlwind_name = "Whirlwind",
 	whirlwind_desc = "Timers and bars for Whirlwinds.",
+	
+	knockback_cmd = "knockback",
+	knockback_name = "Knockback Alert",
+	knockback_desc = "Warn for knockback",
 } end )
 
 L:RegisterTranslations("deDE", function() return {
@@ -111,25 +118,25 @@ L:RegisterTranslations("deDE", function() return {
 ---------------------------------
 
 -- module variables
-module.revision = 20007 -- To be overridden by the module!
+module.revision = 20008 -- To be overridden by the module!
 module.enabletrigger = module.translatedName -- string or table {boss, add1, add2}
 module.wipemobs = { L["add_name"] } -- adds which will be considered in CheckForEngage
-module.toggleoptions = {"whirlwind", "adds", "enrage", "berserk", "bosskill"}
+module.toggleoptions = {"whirlwind", "adds", "enrage", "berserk", "knockback", "bosskill"}
 
 
 -- locals
 local timer = {
 	berserk = 600,
-	earliestFirstWhirlwind = 8,
-	latestFirstWhirlwind = 12,
-	firstWhirlwind = 8,
+	firstWhirlwind = 20,
 	whirlwind = 15,
 	earliestNextWhirlwind = 5,
 	latestNextWhirlwind = 10,
+	firstKnockback = 10,
 }
 local icon = {
 	berserk = "Spell_Shadow_UnholyFrenzy",
 	whirlwind = "Ability_Whirlwind",
+	knockback = "Ability_Rogue_FeignDeath",
 }
 local syncName = {
 	whirlwind = "SarturaWhirlwindStart"..module.revision,
@@ -182,8 +189,11 @@ function module:OnEngage()
 		self:DelayedMessage(timer.berserk - 10, L["warn6"], "Important", nil, nil, true)
 	end
 	if self.db.profile.whirlwind then
-		self:IntervalBar(L["whirlwindfirstbartext"], timer.earliestFirstWhirlwind, timer.latestFirstWhirlwind, icon.whirlwind)
-		self:DelayedMessage(timer.earliestFirstWhirlwind - 3, L["whirlwindinctext"], "Attention", true, "Alarm")
+		self:Bar(L["whirlwindfirstbartext"], timer.firstWhirlwind, icon.whirlwind)
+		self:DelayedMessage(timer.firstWhirlwind - 3, L["whirlwindinctext"], "Attention", true, "Alarm")
+	end
+	if self.db.profile.knockback then
+		self:Bar(L["knockbackbartext"], timer.firstKnockback, icon.knockback)
 	end
 end
 

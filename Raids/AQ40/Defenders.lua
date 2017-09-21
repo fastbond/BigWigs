@@ -105,7 +105,7 @@ L:RegisterTranslations("deDE", function() return {
 ---------------------------------
 
 -- module variables
-module.revision = 20004 -- To be overridden by the module!
+module.revision = 20005 -- To be overridden by the module!
 module.enabletrigger = module.translatedName -- string or table {boss, add1, add2}
 --module.wipemobs = { L["add_name"] } -- adds which will be considered in CheckForEngage
 module.toggleoptions = {"plagueyou", "plagueother", "icon", -1, "thunderclap", "explode", "enrage"--[[, "bosskill"]]}
@@ -204,7 +204,7 @@ function module:CheckPlague(msg)
 			self:WarningSign(icon.plague, 5)
 		elseif self.db.profile.plagueother then
 			self:Message(pplayer .. L["plaguewarn"], "Attention")
-			--self:TriggerEvent("BigWigs_SendTell", pplayer, L["plagueyouwarn"]) -- can cause whisper bug on nefarian
+			self:TriggerEvent("BigWigs_SendTell", pplayer, L["plagueyouwarn"])
 		end
 
 		if self.db.profile.icon then

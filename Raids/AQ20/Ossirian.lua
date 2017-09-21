@@ -25,7 +25,8 @@ L:RegisterTranslations("enUS", function() return {
 	supremewarn = "Ossirian Supreme Mode!",
 	supremedelaywarn = "Supreme in %d seconds!",
 	debufftrigger = "Ossirian the Unscarred is afflicted by (.+) Weakness.",
-	crystaltrigger = "Ossirian Crystal Trigger dies.",
+	crystaltrigger = "Ossirian Crystal Trigger begins to cast (.+) Weakness.",
+	crystal_bar = "Weakness cast!"
 	debuffwarn = "Ossirian now weak to %s!",
 	supreme_bar = "Supreme",
 	expose = "Expose",
@@ -100,9 +101,9 @@ local timer = {
 	weakness = 45,
 	supreme = 45,
 	firstCyclone = 20,
-	cyclone = 15,
-	earliestWarstomp = 25,
-	latestWarstomp = 35,
+	cyclone = 20,
+	warstompCD = 30,
+	crystalCast = 5,
 }
 local icon = {
 	supreme = "Spell_Shadow_CurseOfTounges",
@@ -155,7 +156,7 @@ end
 -- called after boss is engaged
 function module:OnEngage()
 	self:Bar(L["Cyclone"], timer.firstCyclone, icon.cyclone)
-	self:Bar(L["WarStomp"], timer.earliestWarstomp, icon.warstomp)
+	self:Bar(L["WarStomp"], timer.warstompCD, icon.warstomp)
 end
 
 -- called after boss is disengaged (wipe(retreat) or victory)
@@ -169,12 +170,6 @@ end
 
 function module:CHAT_MSG_COMBAT_HOSTILE_DEATH(msg)
 	BigWigs:CheckForBossDeath(msg, self)
-
-	-- if the same weakness triggers back to back, the normal combat log entry is missing for the weakness
-	-- this event is triggered 2s later
-	if string.find(msg, L["crystaltrigger"]) then
-		self:Sync(syncName.crystal)
-	end
 end
 
 function module:CHAT_MSG_SPELL_PERIODIC_CREATURE_DAMAGE( msg )
@@ -198,14 +193,14 @@ end
 function module:BigWigs_RecvSync(sync, rest, nick)
 	if sync == syncName.weakness and rest then
 		self:Weakness(rest)
-	elseif sync == syncName.crystal then
-		self:Crystal()
+	elseif sync == syncName.crystal and rest then
+		self:Bar(rest..L["crystal_bar"], timer.crystalCast, L[rest.."Icon"])
 	elseif sync == syncName.supreme then
 		self:Supreme()
 	elseif sync == syncName.cyclone then
 		self:Cyclone()
 	elseif sync == syncName.warstomp then
-		self:IntervalBar(L["WarStomp"], timer.earliestWarstomp, timer.latestWarstomp, icon.warstomp)
+		self:Bar(L["WarStomp"], timer.warstompCD, icon.warstomp)
 	end
 end
 
@@ -248,12 +243,6 @@ function module:Weakness(weakness, delay)
 	end
 end
 
-function module:Crystal()
-	if timeLastWeaken + 3 < GetTime() then -- crystal trigger occurs 2s after weaken trigger
-		self:Weakness(currentWeakness, 2)
-	end
-end
-
 function module:Supreme()
 	if self.db.profile.supreme then
 		self:Message(L["supremewarn"], "Attention", nil, "Beware")
@@ -266,5 +255,9 @@ function module:Debuff(msg)
 	end
 	if string.find(msg, L["stomp_trigger"])then
 		self:Sync(syncName.warstomp)
+	end
+	local _, _, debuffName = string.find(msg, L["crystaltrigger"])
+	if debuffName and L:HasReverseTranslation(debuffName) then
+		self:Sync(syncName.crystal .. " " .. LGetReverseTranslation(debuffName))
 	end
 end

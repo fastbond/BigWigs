@@ -45,6 +45,12 @@ L:RegisterTranslations("enUS", function() return {
 	warn7 = "Wave 7/8",
 	warn8 = "Incoming General Rajaxx",
 
+	thundercrash_cmd = "thundercrash",
+	thundercrash_name = "Thundercrash Alert",
+	thundercrash_desc = "Warn for Thundercrash",
+
+	thundercrash_trigger = "Thundercrash",
+	thundercrash_bar = "Thundercrash CD",
 
 } end )
 
@@ -81,22 +87,24 @@ L:RegisterTranslations("deDE", function() return {
 ---------------------------------
 
 -- module variables
-module.revision = 20006 -- To be overridden by the module!
+module.revision = 20007 -- To be overridden by the module!
 module.enabletrigger = {module.translatedName, andorov} -- string or table {boss, add1, add2}
-module.toggleoptions = {--[["wave",]] "bosskill"}
+module.toggleoptions = {"wave", "thundercrash", "bosskill"}
 
 
 -- locals
 local timer = {
-	wave = 180,
 	yeggethShield = 6,
 --yeggethShieldCD = 15,
+	thundercrashCD = 14,
 }
 local icon = {
-	wave = "Spell_Holy_PrayerOfHealing",
 	yeggethShield = "Spell_Holy_SealOfProtection",
+	thundercrash = "Spell_Nature_ThunderClap",
 }
-local syncName = {}
+local syncName = {
+	thundercrash = "RajaxxThundercrash"..module.revision,
+}
 
 local wave = nil
 
@@ -108,14 +116,17 @@ module:RegisterYellEngage(L["trigger1"])
 -- called after module is enabled
 function module:OnEnable()
 	self:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_CREATURE_BUFFS")
-	--self:RegisterEvent("CHAT_MSG_MONSTER_YELL")
+	self:RegisterEvent("CHAT_MSG_SPELL_CREATURE_VS_PLAYER_DAMAGE", "Event") --thundercrash_trigger
+	self:RegisterEvent("CHAT_MSG_SPELL_CREATURE_VS_SELF_DAMAGE", "Event") --thundercrash_trigger
+	self:ThrottleSync(5, syncName.thundercrash)
 
-	--self.warnsets = {}
-	--for i=0,8 do
-	--	self.warnsets[L["trigger"..i]] = L["warn"..i]
-	--end
-	--
-	--wave = 0
+	self:RegisterEvent("CHAT_MSG_MONSTER_YELL")
+
+	self.warnsets = {}
+	for i=0,8 do
+		self.warnsets[L["trigger"..i]] = L["warn"..i]
+	end
+
 end
 
 -- called after module is enabled and after each wipe
@@ -124,7 +135,7 @@ end
 
 -- called after boss is engaged
 function module:OnEngage()
---wave = 1
+	self:Sync(syncName.thundercrash)
 end
 
 -- called after boss is disengaged (wipe(retreat) or victory)
@@ -146,5 +157,37 @@ function module:CHAT_MSG_SPELL_PERIODIC_CREATURE_BUFFS(msg)
 		--self:RemoveBar(L["shield_cd"])
 		self:Bar(L["shield"], timer.yeggethShield, icon.yeggethShield)
 		--self:DelayedBar(timer.yeggethShield, L["shield_cd"], timer.yeggethShieldCD-timer.yeggethShield, icon.yeggethShield)
+	end
+end
+
+function module:CHAT_MSG_MONSTER_YELL(msg)
+	if self.db.profile.wave and msg and self.warnsets[msg] then
+		self:Message(self.warnsets[msg], "Urgent")
+	end
+end
+
+function module:Event(msg)
+	if string.find(msg, L["thundercrash_trigger"]) then
+		self:Sync(syncName.thundercrash)
+	end
+end
+
+------------------------------
+--      Synchronization	    --
+------------------------------
+
+function module:BigWigs_RecvSync(sync, rest, nick)
+	if sync == syncName.thundercrash then
+		self:Thundercrash()
+	end
+end
+
+------------------------------
+--      Sync Handlers	    --
+------------------------------
+
+function module:Thundercrash()
+	if self.db.profile.thundercrash then
+		self:Bar(L["thundercrash_bar"], timer.thundercrashCD, icon.thundercrash)
 	end
 end

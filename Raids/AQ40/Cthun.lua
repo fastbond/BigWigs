@@ -72,10 +72,6 @@ L:RegisterTranslations("enUS", function() return {
 	digestiveAcidTrigger = "You are afflicted by Digestive Acid [%s%(]*([%d]*).",
 	msgDigestiveAcid = "5 Acid Stacks",
 
-	["Second TentacleHP"] = "Second Tentacle %d%%",
-	["First Tentacle dead"] = "First Tentacle dead",
-	["First Tentacle"] = "First Tentacle",
-	["Second Tentacle"] = "Second Tentacle",
 
 	--[[GNPPtrigger	= "Nature Protection",
 	GSPPtrigger	= "Shadow Protection",
@@ -84,14 +80,21 @@ L:RegisterTranslations("enUS", function() return {
 	CoStrigger	= "Curse of Shadow",
 	CoRtrigger	= "Curse of Recklessness",]]
 
-
-	proximity_cmd = "proximity",
-	proximity_name = "Proximity Warning",
-	proximity_desc = "Show Proximity Warning Frame",
-
-	stomach_cmd = "stomach",
-	stomach_name = "Players in Stomach",
-	stomach_desc = "Show players in stomach instead of too close players",
+	sound_cmd = "sound",
+	sound_name = "Sound",
+	sound_desc = "Play sound on proximity.",
+	
+	tentacleName = "Flesh Tentacle",
+	
+	text_tooClose = "|cffcccccc-- Too Close --",
+	text_inStomach = "|cffcccccc-- In Stomach --",
+	text_stomachTentacles = "|cffcccccc-- Stomach Tentacles --",
+	text_dead = "|cffff0000Dead",
+	text_tentacle = "|cffccccccTentacle",
+	text_nobody ="|cff777777Nobody",
+	text_weakened ="|cffff00ffWeakened",
+	
+	["Big Wigs Cthun Assist"] = true,
 
 } end )
 
@@ -162,9 +165,7 @@ L:RegisterTranslations("deDE", function() return {
 	CoStrigger	= "Curse of Shadow",
 	CoRtrigger	= "Curse of Recklessness",]]
 
-	proximity_cmd = "proximity",
-	proximity_name = "Nähe Warnungsfenster",
-	proximity_desc = "Zeit das Nähe Warnungsfenster",
+
 } end )
 
 
@@ -173,16 +174,17 @@ L:RegisterTranslations("deDE", function() return {
 ---------------------------------
 
 -- module variables
-module.revision = 20012 -- To be overridden by the module!
+module.revision = 20013 -- To be overridden by the module!
 local eyeofcthun = AceLibrary("Babble-Boss-2.2")["Eye of C'Thun"]
 local cthun = AceLibrary("Babble-Boss-2.2")["C'Thun"]
 module.enabletrigger = {eyeofcthun, cthun} -- string or table {boss, add1, add2}
 --module.wipemobs = { L["add_name"] } -- adds which will be considered in CheckForEngage
-module.toggleoptions = {"rape", -1, "tentacle", "glare", "group", -1, "giant", "acid", "weakened", -1, "proximity", "stomach", "bosskill"}
+module.toggleoptions = {"rape", -1, "tentacle", "glare", "group", -1, "giant", "acid", "weakened", "sound", -1, "bosskill"}
 
 -- Proximity Plugin
-module.proximityCheck = function(unit) return CheckInteractDistance(unit, 2) end
+--[[module.proximityCheck = function(unit) return CheckInteractDistance(unit, 2) end
 module.proximitySilent = false
+--]]
 
 
 -- locals
@@ -208,7 +210,7 @@ local timer = {
 
 	reschedule = 50,      -- delay from the moment of weakening for timers to restart
 	target = 1,           -- delay for target change checking on Eye of C'Thun and Giant Eye Tentacle
-	CheckTentacleHP = 0.5, -- delay for updating flesh tentacle hp
+
 	weakened = 45,        -- duration of a weaken
 
 	eyeBeam = 2,         -- Eye Beam Cast time
@@ -231,24 +233,31 @@ local syncName = {
 	giantClawSpawn = "GiantClawSpawn"..module.revision,
 	giantEyeSpawn = "GiantEyeSpawn"..module.revision,
 	eyeBeam = "CThunEyeBeam"..module.revision,
-	fleshtentacledead = "CThunFleshTentacleDead"..module.revision,
+	--tablet
+	fleshTentacleDead = "FleshTentacleDead"..module.revision,
 }
 
 local gianteye = "Giant Eye Tentacle"
-local fleshtentacle = "Flesh Tentacle"
 
 local cthunstarted = nil
 local phase2started = nil
-local fleshtentacledead = false
 local firstGlare = nil
 local firstWarning = nil
 --local target = nil
 local tentacletime = timer.p1Tentacle
 local isWeakened = nil
-
 local doCheckForWipe = false
-
 local eyeTarget = nil
+
+
+--Tablet (Proximity, Stomach, FleshTentacleHP). Basically CThunAssist baked into this mod.
+local tablet = AceLibrary("Tablet-2.0")
+local paintchips = AceLibrary("PaintChips-2.0")
+local roster = nil
+local lastplayed = 0
+local playername = nil
+local tentacleDead = false
+local tentacleHP = 0
 
 
 ------------------------------
@@ -269,10 +278,10 @@ function module:OnEnable()
 	self:ThrottleSync(50, syncName.weaken)
 	self:ThrottleSync(3, syncName.giantEyeDown)
 	self:ThrottleSync(600, syncName.weakenOver)
-	self:ThrottleSync(30, syncName.fleshtentacledead)
 	self:ThrottleSync(25, syncName.giantClawSpawn)
 	self:ThrottleSync(25, syncName.giantEyeSpawn)
 	self:ThrottleSync(25, syncName.tentacleSpawn)
+	
 end
 
 -- called after module is enabled and after each wipe
@@ -280,9 +289,7 @@ function module:OnSetup()
 	self:RegisterEvent("CHAT_MSG_COMBAT_HOSTILE_DEATH")
 
 	self.started = nil
-	self.tentacleHP = 100
 	self.warning = 100
-	fleshtentacledead = false
 	eyeTarget = nil
 	cthunstarted = nil
 	firstGlare = nil
@@ -292,19 +299,29 @@ function module:OnSetup()
 
 	tentacletime = timer.p1Tentacle
 
-	self:RemoveProximity()
-	self:TriggerEvent("BigWigs_StopDebuffTrack")
+	
+	--tablet
+	lastplayed = 0
+	playername = UnitName("player")
+	tentacleDead = false
+	tentacleHP = "|cff777777??"
+	
 end
 
 -- called after boss is engaged
 function module:OnEngage()
 	self:CThunStart()
+	
+	--tablet
+	if not roster then roster = AceLibrary("RosterLib-2.0") end
+	self:ShowTablet()
 end
 
 -- called after boss is disengaged (wipe(retreat) or victory)
 function module:OnDisengage()
-	self:RemoveProximity()
-	self:TriggerEvent("BigWigs_StopDebuffTrack")
+	--tablet
+	roster = nil
+	self:HideTablet()
 end
 
 
@@ -319,8 +336,9 @@ function module:CHAT_MSG_COMBAT_HOSTILE_DEATH(msg)
 		self:Sync(syncName.p2Start)
 	elseif (msg == string.format(UNITDIESOTHER, gianteye)) then
 		self:Sync(syncName.giantEyeDown)
-	elseif (msg == string.format(UNITDIESOTHER, fleshtentacle)) and not fleshtentacledead then
-		self:Sync(syncName.fleshtentacledead)
+	--tablet
+	elseif msg == string.format(UNITDIESOTHER, L["tentacleName"]) then
+		self:Sync(syncName.fleshTentacleDead)
 	end
 end
 
@@ -370,6 +388,11 @@ function module:BigWigs_RecvSync(sync, rest, nick)
 		self:CThunP2Start()
 	elseif sync == syncName.weaken then
 		self:CThunWeakened()
+		--tablet
+		self:ScheduleEvent("resetTentacles", function()
+			tentacleDead = false
+			tentacleHP = "|cff777777??"
+		end, 45)
 	elseif sync == syncName.weakenOver then
 		self:CThunWeakenedOver()
 	elseif sync == syncName.giantEyeDown then
@@ -382,13 +405,10 @@ function module:BigWigs_RecvSync(sync, rest, nick)
 		self:GTentacleRape()
 	elseif sync == syncName.tentacleSpawn then
 		self:TentacleRape()
-	elseif sync == syncName.fleshtentacledead then
-		fleshtentacledead = true
-		self.tentacleHP = 100
-		self:Message(L["First Tentacle dead"], "Important" )
-		self:TriggerEvent("BigWigs_StopHPBar", self, L["First Tentacle"])
-		self:TriggerEvent("BigWigs_StartHPBar", self, L["Second Tentacle"], 100)
-		self:TriggerEvent("BigWigs_SetHPBar", self, L["Second Tentacle"], 0)
+	--tablet
+	elseif sync == syncName.fleshTentacleDead then
+		tentacleDead = true
+		tentacleHP = "|cff777777??"
 	end
 end
 
@@ -418,7 +438,6 @@ function module:CThunStart()
 		self:DelayedSync(timer.p1TentacleStart, syncName.tentacleSpawn)
 		self:ScheduleRepeatingEvent("bwcthuntarget", self.CheckTarget, timer.target, self)
 
-		self:Proximity()
 	end
 end
 
@@ -427,10 +446,6 @@ function module:CThunP2Start()
 		phase2started = true
 		doCheckForWipe = false -- disable wipe check since we get out of combat, enable it later again
 		tentacletime = timer.p2Tentacle
-
-		self:TriggerEvent("BigWigs_StartHPBar", self, L["First Tentacle"], 100)
-		self:TriggerEvent("BigWigs_SetHPBar", self, L["First Tentacle"], 0)
-		self:ScheduleRepeatingEvent("bwcthunCheckTentacleHP", self.CheckTentacleHP, timer.CheckTentacleHP, self )
 
 		self:Message(L["phase2starting"], "Bosskill")
 
@@ -473,19 +488,12 @@ function module:CThunP2Start()
 		self:DelayedSync(timer.p2FirstGiantEye, syncName.giantEyeSpawn)
 		self:DelayedSync(timer.p2FirstGiantClaw, syncName.giantClawSpawn)
 		self:ScheduleRepeatingEvent("bwcthuntargetp2", self.CheckTarget, timer.target, self )
-
-	end
-	if self.db.profile.stomach then
-		self:TriggerEvent("BigWigs_StartDebuffTrack", self:ToString(), "Interface\\Icons\\Ability_Creature_Disease_02", L["playersInStomach"])
 	end
 end
 
 function module:CThunWeakened()
 	isWeakened = true
-	fleshtentacledead = false
-	self.tentacleHP = 100
 	self.warning = 100
-	self:TriggerEvent("BigWigs_StopHPBar", self, L["Second Tentacle"])
 	self:ThrottleSync(0.1, syncName.weakenOver)
 
 	if self.db.profile.weakened then
@@ -518,8 +526,6 @@ end
 function module:CThunWeakenedOver()
 	isWeakened = nil
 	self:ThrottleSync(600, syncName.weakenOver)
-	self:TriggerEvent("BigWigs_StartHPBar", self, L["First Tentacle"], 100)
-	self:TriggerEvent("BigWigs_SetHPBar", self, L["First Tentacle"], 0)
 	self:CancelDelayedSync(syncName.weakenOver) -- ok
 
 	if self.db.profile.weakened then
@@ -568,41 +574,6 @@ end
 -----------------------
 -- Utility Functions --
 -----------------------
-function module:CheckTentacleHP()
-	local health
-	if UnitName("playertarget") == fleshtentacle then
-		health = UnitHealth("playertarget")
-	else
-		for i = 1, GetNumRaidMembers(), 1 do
-			if UnitName("Raid"..i.."target") == fleshtentacle then
-				health = UnitHealth("Raid"..i.."target")
-				break;
-			end
-		end
-	end
-
-	if health and health ~= self.tentacleHP and health < self.tentacleHP then
-		self.tentacleHP = health
-		if fleshtentacledead then
-			self:TriggerEvent("BigWigs_SetHPBar", self, L["Second Tentacle"], 100-self.tentacleHP)
-			if self.tentacleHP < 10 and self.warning > 10 then
-				self.warning = 10
-				self:Message(string.format(L["Second TentacleHP"], self.warning), "Important" )
-			elseif self.tentacleHP < 20 and self.warning > 20 then
-				self.warning = 20
-				self:Message(string.format(L["Second TentacleHP"], self.warning), "Important" )
-			elseif self.tentacleHP < 30 and self.warning > 30 then
-				self.warning = 30
-				self:Message(string.format(L["Second TentacleHP"], self.warning), "Important" )
-			elseif self.tentacleHP < 40 and self.warning > 40 then
-				self.warning = 40
-				self:Message(string.format(L["Second TentacleHP"], self.warning), "Important" )
-			end
-		else
-			self:TriggerEvent("BigWigs_SetHPBar", self, L["First Tentacle"], 100-self.tentacleHP)
-		end
-	end
-end
 
 function module:CheckTarget()
 	local i
@@ -674,4 +645,159 @@ function module:TentacleRape()
 		self:Bar(self.db.profile.rape and L["barTentacle"] or L["barNoRape"], tentacletime, icon.eyeTentacles)
 		self:DelayedMessage(tentacletime - 5, self.db.profile.rape and L["tentacle"] or L["norape"], "Urgent", false, nil, true)
 	end
+end
+
+------------------------------
+--      Tablet              --
+------------------------------
+
+function module:OnTooltipUpdate()
+	if not tablet:IsRegistered("BigWigsCthunAssist") then return end
+	
+	-- build tablet
+	local cat_proximity = tablet:AddCategory(
+		'columns', 1,
+		'text', L["text_tooClose"],
+		'justify', "CENTER",
+		'child_justify', "CENTER"
+	)
+	local cat_stomach
+	local cat_tentacleHeader
+	local cat_tentacle
+	if phase2started then
+		cat_stomach = tablet:AddCategory(
+			'columns', 1,
+			'text', L["text_inStomach"],
+			'justify', "CENTER",
+			'child_justify', "CENTER"
+		)
+		cat_tentacleHeader = tablet:AddCategory(
+			'columns', 1,
+			'text', L["text_stomachTentacles"],
+			'justify', "CENTER",
+			'showWithoutChildren', true
+		)
+		cat_tentacle = tablet:AddCategory(
+			'columns', isWeakened and 1 or 2,
+			'child_justify', "CENTER",
+			'hideBlankLine', true
+		)
+	end
+	
+	-- iterate roster
+	local tooclose = 0
+	local added = false
+	local tentacleTargeted = false
+	
+	for unit in roster:IterateRoster() do
+		-- proximity
+		if tooclose < 5 then
+			if (not UnitIsDeadOrGhost(unit.unitid)) and (unit.name ~= playername) and CheckInteractDistance(unit.unitid, 2) then
+				cat_proximity:AddLine('text', "|cff"..paintchips:GetHex(unit.class)..unit.name.."|r")
+				tooclose = tooclose + 1
+			end
+		end
+		
+		if phase2started then
+			-- stomach debuff
+			for a=1,16 do
+				local t = UnitDebuff(unit.unitid, a)
+				if not t then break end
+				if t == "Interface\\Icons\\Ability_Creature_Disease_02" then
+					cat_stomach:AddLine('text', "|cff"..paintchips:GetHex(unit.class)..unit.name.."|r")
+					added = true
+					
+					-- tentacle scan
+					if not tentacleTargeted then
+						local raidUnit = unit.unitid.."target"
+						if UnitExists(raidUnit) and (UnitName(raidUnit) == L["tentacleName"]) and (not UnitIsDead(raidUnit)) then
+							tentacleHP = math.ceil((UnitHealth(raidUnit) / UnitHealthMax(raidUnit)) * 100)
+							tentacleTargeted = true
+						end
+					end
+					
+					break
+				end
+			end
+		elseif tooclose >= 5 then
+			break
+		end
+	end
+	
+	-- fill out tablet
+	-- proximity
+	if tooclose == 0 then
+		cat_proximity:AddLine('text', L["text_nobody"])
+	elseif self.db.profile.sound then
+		local t = time()
+		if t > lastplayed + 1 then
+			lastplayed = t
+			if UnitAffectingCombat("player") then
+				self:TriggerEvent("BigWigs_Sound", "Beep")
+			end
+		end
+	end
+	
+	if phase2started then
+		-- Stomach
+		if not added then
+			cat_stomach:AddLine('text', L["text_nobody"])
+		end
+		
+		-- Stomach Tentacles
+		if isWeakened then
+			cat_tentacle:AddLine('text', L["text_weakened"])
+		else
+			local hp = tentacleHP.."%"
+			local other = "|cff777777??%"
+			
+			if tentacleTargeted then
+				hp = "|cff00ff00"..hp
+			else
+				hp = "|cff777777"..hp
+			end
+			if tentacleDead then
+				other = L["text_dead"]
+			end
+			
+			cat_tentacle:AddLine(
+				'text', L["text_tentacle"].." 1:",
+				'text2', (tentacleDead and other) or hp
+			)
+			cat_tentacle:AddLine(
+				'text', L["text_tentacle"].." 2:",
+				'text2', (tentacleDead and hp) or other
+			)
+		end
+	end
+end
+
+function module:ShowTablet()
+	if not tablet:IsRegistered("BigWigsCthunAssist") then
+		tablet:Register("BigWigsCthunAssist",
+			"children",
+				function()
+					tablet:SetTitle(L["Big Wigs Cthun Assist"])
+					self:OnTooltipUpdate()
+				end,
+			"clickable", true,
+			"showTitleWhenDetached", true,
+			"showHintWhenDetached", true,
+			"cantAttach", true
+		)
+	end
+	
+	if not self:IsEventScheduled("bwcthunassistupdate") then
+		self:ScheduleRepeatingEvent("bwcthunassistupdate", function() tablet:Refresh("BigWigsCthunAssist") end, .1)
+	end
+	
+	if tablet:IsAttached("BigWigsCthunAssist") then
+		tablet:Detach("BigWigsCthunAssist")
+	end
+end
+
+function module:HideTablet()
+	if not tablet:IsRegistered("BigWigsCthunAssist") then return end
+	self:CancelScheduledEvent("bwcthunassistupdate")
+	tablet:Attach("BigWigsCthunAssist")
 end

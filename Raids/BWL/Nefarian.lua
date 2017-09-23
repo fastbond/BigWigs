@@ -350,11 +350,11 @@ function module:CHAT_MSG_MONSTER_YELL(msg)
 						self:Message(v[1], "Core", nil, "Long")
 					end
 
-					self:Bar(v[1], timer.classcall, icon.classcall)
-					self:DelayedMessage(timer.classcall - 3, L["classcall_warning"], "Important")
-					self:DelayedSound(timer.classcall - 3, "Three")
-					self:DelayedSound(timer.classcall - 2, "Two")
-					self:DelayedSound(timer.classcall - 1, "One")
+					self:Bar(v[1], timer.classcallInterval, icon.classcall)
+					self:DelayedMessage(timer.classcallInterval - 3, L["classcall_warning"], "Important")
+					self:DelayedSound(timer.classcallInterval - 3, "Three")
+					self:DelayedSound(timer.classcallInterval - 2, "Two")
+					self:DelayedSound(timer.classcallInterval - 1, "One")
 				end
 			else
 				if self.db.profile.otherwarn and string.find(msg, L["zerg_trigger"]) then
@@ -419,16 +419,16 @@ end
 ------------------------------
 function module:Curse()
 	if self.db.profile.curse then
-		self:Bar(L["curse_bar"], timer.curseInterval, icon.curse)
+		self:Bar(L["curse_bar"], timer.curseInterval, icon.curse, true, "Purple")
 	end
 end
 
 function module:Shadowflame()
 	if self.db.profile.shadowflame then
 		self:RemoveBar(L["shadowflame_bar"]) --remove timer bar
-		self:Bar(L["shadowflamecast_bar"], timer.shadowflameCast, icon.shadowflame) -- show cast bar
+		self:Bar(L["shadowflamecast_bar"], timer.shadowflameCast, icon.shadowflame, true, "Orange") -- show cast bar
 		self:Message(L["shadowflame_warning"], "Important", true, "Alarm")
-		self:DelayedBar(timer.shadowflameCast, L["shadowflame_bar"], timer.shadowflame-timer.shadowflameCast, icon.shadowflame) -- delayed timer bar
+		self:DelayedBar(timer.shadowflameCast, L["shadowflame_bar"], timer.shadowflame-timer.shadowflameCast, icon.shadowflame, true, "Yellow") -- delayed timer bar
 	end
 end
 
@@ -436,8 +436,8 @@ function module:Fear()
 	if self.db.profile.fear then
 		self:RemoveBar(L["fear_bar"]) -- remove timer bar
 		self:Message(L["fear_warning"], "Important", true, "Alert")
-		self:Bar(L["fear_warn"], timer.fearCast, icon.fear) -- show cast bar
-		self:DelayedBar(timer.fearCast, L["fear_bar"], timer.fear-timer.fearCast, icon.fear) -- delayed timer bar
+		self:Bar(L["fear_warn"], timer.fearCast, icon.fear, true, "Red") -- show cast bar
+		self:DelayedBar(timer.fearCast, L["fear_bar"], timer.fear-timer.fearCast, icon.fear, true, "White") -- delayed timer bar
 		--self:WarningSign(icon.fear, 5)
 	end
 end

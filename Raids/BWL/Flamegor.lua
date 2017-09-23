@@ -194,11 +194,11 @@ function module:BigWigs_RecvSync(sync, rest, nick)
 	elseif sync == syncName.shadowflame and self.db.profile.shadowflame then
 		self:Message(L["shadowflame_warning"], "Important", true, "Alarm")
 		self:RemoveBar(L["shadowflame_Nextbar"]) -- remove timer bar
-		self:Bar(L["shadowflame_bar"], timer.shadowflameCast, icon.shadowflame, true, "red") -- show cast bar
-		self:DelayedIntervalBar(timer.shadowflameCast, L["shadowflame_Nextbar"], timer.earliestShadowflame-timer.shadowflameCast, timer.latestShadowflame-timer.shadowflameCast, icon.shadowflame) -- delayed timer bar
+		self:Bar(L["shadowflame_bar"], timer.shadowflameCast, icon.shadowflame, true, "Orange") -- show cast bar
+		self:DelayedIntervalBar(timer.shadowflameCast, L["shadowflame_Nextbar"], timer.earliestShadowflame-timer.shadowflameCast, timer.latestShadowflame-timer.shadowflameCast, icon.shadowflame, true, "Yellow") -- delayed timer bar
 	elseif sync == syncName.frenzy and self.db.profile.frenzy then
 		self:Message(L["frenzy_message"], "Important", nil, true, "Alert")
-		self:Bar(L["frenzy_bar"], timer.frenzy, icon.frenzy, true, "red")
+		self:Bar(L["frenzy_bar"], timer.frenzy, icon.frenzy, true, "Red")
 		if playerClass == "HUNTER" then
 			self:WarningSign(icon.tranquil, timer.frenzy, true)
 		end
@@ -208,7 +208,7 @@ function module:BigWigs_RecvSync(sync, rest, nick)
 		self:RemoveWarningSign(icon.tranquil, true)
 		if lastFrenzy ~= 0 then
 			local NextTime = (lastFrenzy + timer.frenzy) - GetTime()
-			self:Bar(L["frenzy_Nextbar"], NextTime, icon.frenzy, true, "white")
+			self:Bar(L["frenzy_Nextbar"], NextTime, icon.frenzy, true, "White")
 		end
 	end
 end

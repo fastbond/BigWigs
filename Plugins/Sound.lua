@@ -14,7 +14,8 @@ local sounds = {
 	Alert = "Interface\\AddOns\\BigWigs\\Sounds\\Alert.mp3",
 	Alarm = "Interface\\AddOns\\BigWigs\\Sounds\\Alarm.mp3",
 	Victory = "Interface\\AddOns\\BigWigs\\Sounds\\Victory.mp3",
-
+	
+	Beep = "Interface\\AddOns\\BigWigs\\Sounds\\beep.mp3",
 	Beware = "Interface\\AddOns\\BigWigs\\Sounds\\Beware.wav",
 	RunAway = "Interface\\AddOns\\BigWigs\\Sounds\\RunAway.wav",
 

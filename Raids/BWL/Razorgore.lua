@@ -208,6 +208,7 @@ local syncName = {
 	phase2 = "RazorgorePhaseTwo"..module.revision,
 }
 
+local doCheckForWipe = false
 
 ------------------------------
 --      Initialization      --
@@ -230,6 +231,7 @@ function module:OnEnable()
 	self:RegisterEvent("CHAT_MSG_SPELL_CREATURE_VS_CREATURE_DAMAGE")
 	self:RegisterEvent("CHAT_MSG_SPELL_FRIENDLYPLAYER_DAMAGE")
 	self:RegisterEvent("CHAT_MSG_MONSTER_EMOTE")
+	
 
 	self:ThrottleSync(5, syncName.egg)
 	self:ThrottleSync(5, syncName.orb .. "(.+)")
@@ -240,14 +242,17 @@ end
 
 -- called after module is enabled and after each wipe
 function module:OnSetup()
+	self:RegisterEvent("CHAT_MSG_COMBAT_HOSTILE_DEATH")
 	self.started        = nil
 	self.phase          = 0
 	self.previousorb    = nil
 	self.eggs           = 0
+	doCheckForWipe = false
 end
 
 -- called after boss is engaged
 function module:OnEngage()
+	doCheckForWipe = true
 	if self.db.profile.phase then
 		self:Message(L["start_message"], "Attention")
 	end
@@ -267,6 +272,22 @@ end
 ------------------------------
 --      Event Handlers      --
 ------------------------------
+
+function module:CHAT_MSG_COMBAT_HOSTILE_DEATH(msg)
+	BigWigs:CheckForBossDeath(msg, self)
+	if (msg == string.format(UNITDIESOTHER, controller)) then
+		doCheckForwipe = false
+		self:ScheduleEvent("startRazorgoreWipeCheck", function()
+			doCheckForWipe = true
+		end, 60)
+	end
+end
+
+function module:CheckForWipe(event)
+	if doCheckForWipe then
+		BigWigs:CheckForWipe(self)
+	end
+end
 
 function module:CHAT_MSG_MONSTER_YELL(msg)
 	if msg == L["phase2_trigger"] then

@@ -183,7 +183,7 @@ function module:BigWigs_RecvSync(sync, rest, nick)
 	elseif sync == syncName.shadowflame and self.db.profile.shadowflame then
 		self:Message(L["shadowflame_warning"], "Important", true, "Alarm")
 		self:RemoveBar(L["shadowflame_Nextbar"]) -- remove timer bar
-		self:Bar(L["shadowflame_bar"], timer.shadowflameCast, icon.shadowflame) -- show cast bar
-		self:DelayedIntervalBar(timer.shadowflameCast, L["shadowflame_Nextbar"], timer.earliestShadowflame-timer.shadowflameCast, timer.latestShadowflame-timer.shadowflameCast, icon.shadowflame) -- delayed timer bar
+		self:Bar(L["shadowflame_bar"], timer.shadowflameCast, icon.shadowflame, true, "Orange") -- show cast bar
+		self:DelayedIntervalBar(timer.shadowflameCast, L["shadowflame_Nextbar"], timer.earliestShadowflame-timer.shadowflameCast, timer.latestShadowflame-timer.shadowflameCast, icon.shadowflame, true, "Yellow") -- delayed timer bar
 	end
 end

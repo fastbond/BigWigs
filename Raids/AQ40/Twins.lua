@@ -298,10 +298,10 @@ function module:Teleport()
 
 		self:KTM_Reset()
 
-		self:DelayedSound(timer.earliestTeleport - 10, "Ten")
-		self:DelayedSound(timer.earliestTeleport - 3, "Three")
-		self:DelayedSound(timer.earliestTeleport - 2, "Two")
-		self:DelayedSound(timer.earliestTeleport - 1, "One")
-		self:DelayedMessage(timer.earliestTeleport - 0.1, L["portwarn"], "Attention", false, "Alarm")
+		self:DelayedSound(timer.teleport - 10, "Ten")
+		self:DelayedSound(timer.teleport - 3, "Three")
+		self:DelayedSound(timer.teleport - 2, "Two")
+		self:DelayedSound(timer.teleport - 1, "One")
+		self:DelayedMessage(timer.teleport - 0.1, L["portwarn"], "Attention", false, "Alarm")
 	end
 end

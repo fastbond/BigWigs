@@ -321,7 +321,7 @@ function BigWigs.modulePrototype:Disengage()
 
 		self:KTM_ClearTarget()
 
-		BigWigsAutoReply:EndBossfight()
+		--BigWigsAutoReply:EndBossfight() no autoreply
 
 		self:RemoveIcon()
 		self:RemoveWarningSign("", true)

@@ -191,11 +191,11 @@ function module:OnEngage()
 	end
 	if self.db.profile.sandblast then
 		self:DelayedMessage(timer.firstSandblast - 5, L["sandblastwarn"], "Important", nil, nil, true)
-		self:Bar(L["sandblastbartext"], timer.firstSandblast, icon.sandblast)
+		self:Bar(L["sandblastbartext"], timer.firstSandblast, icon.sandblast, true, "Gray")
 	end
 	if self.db.profile.sweep then
 		self:DelayedMessage(timer.firstSweep - 5, L["sweepwarn"], "Important", nil, nil, true)
-		self:Bar(L["sweepbartext"], timer.firstSweep, icon.sweep)
+		self:Bar(L["sweepbartext"], timer.firstSweep, icon.sweep, true, "Orange")
 	end
 end
 
@@ -278,20 +278,20 @@ end
 function module:Sweep()
 	if self.db.profile.sweep then
 		self:RemoveBar(L["sweepbartext"]) -- remove timer bar
-		self:Bar(L["sweepannounce"], timer.sweep, icon.sweep) -- show cast bar
+		self:Bar(L["sweepannounce"], timer.sweep, icon.sweep, true, "Red") -- show cast bar
 		self:Message(L["sweepannounce"], "Important", true, "Alarm")
 		self:DelayedMessage(timer.sweepInterval - 5, L["sweepwarn"], "Important", nil, nil, true)
-		self:DelayedBar(timer.sweep, L["sweepbartext"], timer.sweepInterval-timer.sweep, icon.sweep) -- delayed timer bar
+		self:DelayedBar(timer.sweep, L["sweepbartext"], timer.sweepInterval-timer.sweep, icon.sweep, true, "Orange") -- delayed timer bar
 	end
 end
 
 function module:Sandblast()
 	if self.db.profile.sandblast then
 		self:RemoveBar(L["sandblastbartext"]) -- remove timer bar
-		self:Bar(L["sandblastannounce"], timer.sandblast, icon.sandblast) -- show cast bar
+		self:Bar(L["sandblastannounce"], timer.sandblast, icon.sandblast, true, "White") -- show cast bar
 		self:Message(L["sandblastannounce"], "Important", true, "Alert")
 		self:DelayedMessage(timer.sandblastInterval - 5, L["sandblastwarn"], "Important", nil, nil, true)
-		self:DelayedBar(timer.sandblast, L["sandblastbartext"], timer.sandblastInterval-timer.sandblast, icon.sandblast) -- delayed timer bar
+		self:DelayedBar(timer.sandblast, L["sandblastbartext"], timer.sandblastInterval-timer.sandblast, icon.sandblast, true, "Gray") -- delayed timer bar
 	end
 end
 
@@ -315,12 +315,12 @@ function module:Emerge()
 
 		if self.db.profile.sweep then
 			self:DelayedMessage(timer.sweepInterval - 5, L["sweepwarn"], "Important", nil, nil, true)
-			self:Bar(L["sweepbartext"], timer.sweepInterval, icon.sweep)
+			self:Bar(L["sweepbartext"], timer.sweepInterval, icon.sweep, true, "Orange")
 		end
 
 		if self.db.profile.sandblast then
 			self:DelayedMessage(timer.sandblastInterval - 5, L["sandblastwarn"], "Important", nil, nil, true)
-			self:IntervalBar(L["sandblastbartext"], timer.sandblastInterval, icon.sandblast)
+			self:Bar(L["sandblastbartext"], timer.sandblastInterval, icon.sandblast, true, "Gray")
 		end
 	end
 end

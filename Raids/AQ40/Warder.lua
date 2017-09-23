@@ -82,7 +82,7 @@ local timer = {
 	latestSilence = 19,
 	silenceCast = 1.5,
 	earliestRoots = 7,
-	latestRoots = 12,
+	latestRoots = 14,
 	rootsCast = 1.5,
 	earliestDust = 14,
 	latestDust = 19,
@@ -163,29 +163,29 @@ function module:BigWigs_RecvSync( sync, rest, nick )
 	if sync == syncName.fear then
 		if self.db.profile.fear then
 			self:RemoveBar(L["fearBar_next"])
-			self:Bar(L["fearBar"], timer.fearCast, icon.fear)
-			self:DelayedIntervalBar(timer.fearCast, L["fearBar_next"], timer.earliestFear-timer.fearCast, timer.latestFear-timer.fearCast, icon.fear)
+			self:Bar(L["fearBar"], timer.fearCast, icon.fear, true, "Red")
+			self:DelayedIntervalBar(timer.fearCast, L["fearBar_next"], timer.earliestFear-timer.fearCast, timer.latestFear-timer.fearCast, icon.fear, true, "White")
 		end
 		self:AbilityWarn("fear")
 	elseif sync == syncName.silence then
 		if self.db.profile.silence then
 			self:RemoveBar(L["silenceBar_next"])
-			self:Bar(L["silenceBar"], timer.silenceCast, icon.silence)
-			self:DelayedIntervalBar(timer.silenceCast, L["silenceBar_next"], timer.earliestSilence-timer.silenceCast, timer.latestSilence-timer.silenceCast, icon.silence)
+			self:Bar(L["silenceBar"], timer.silenceCast, icon.silence, true, "Gray")
+			self:DelayedIntervalBar(timer.silenceCast, L["silenceBar_next"], timer.earliestSilence-timer.silenceCast, timer.latestSilence-timer.silenceCast, icon.silence, true, "Gray")
 		end
 		self:AbilityWarn("silence")
 	elseif sync == syncName.roots then
 		if self.db.profile.roots then
 			self:RemoveBar(L["rootsBar_next"])
-			self:Bar(L["rootsBar"], timer.rootsCast, icon.roots)
-			self:DelayedIntervalBar(timer.rootsCast, L["rootsBar_next"], timer.earliestRoots-timer.rootsCast, timer.latestRoots-timer.rootsCast, icon.roots)
+			self:Bar(L["rootsBar"], timer.rootsCast, icon.roots, true, "Green")
+			self:DelayedIntervalBar(timer.rootsCast, L["rootsBar_next"], timer.earliestRoots-timer.rootsCast, timer.latestRoots-timer.rootsCast, icon.roots, true, "Green")
 		end
 		self:AbilityWarn("roots")
 	elseif sync == syncName.dust then
 		if self.db.profile.dust then
 			self:RemoveBar(L["dustBar_next"])
-			self:Bar(L["dustBar"], timer.dustCast, icon.dust)
-			self:DelayedIntervalBar(timer.dustCast, L["dustBar_next"], timer.earliestDust-timer.dustCast, timer.latestDust-timer.dustCast, icon.dust)
+			self:Bar(L["dustBar"], timer.dustCast, icon.dust, true, "Yellow")
+			self:DelayedIntervalBar(timer.dustCast, L["dustBar_next"], timer.earliestDust-timer.dustCast, timer.latestDust-timer.dustCast, icon.dust, true, "Yellow")
 		end
 		self:AbilityWarn("dust")
 	end

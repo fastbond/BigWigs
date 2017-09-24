@@ -110,7 +110,7 @@ L:RegisterTranslations("deDE", function() return {
 ---------------------------------
 
 -- module variables
-module.revision = 20005 -- To be overridden by the module!
+module.revision = 20006 -- To be overridden by the module!
 module.enabletrigger = module.translatedName -- string or table {boss, add1, add2}
 --module.wipemobs = { L["add_name"] } -- adds which will be considered in CheckForEngage
 module.toggleoptions = {"curse", "hex", "brainwash", "healingward", "puticon", "bosskill"}
@@ -119,10 +119,10 @@ module.toggleoptions = {"curse", "hex", "brainwash", "healingward", "puticon", "
 -- locals
 local timer = {
 	firstHex = 8,
-	firstHealing = 12,
-	firstBrainwash = 22,
+	firstHealing = 16,
+	firstBrainwash = 13,
 	healing = 18, -- varies from 16.9 to 18.6
-	brainwash = 18, -- varies from 22.9 to 26.8
+	brainwash = 14, -- varies from 22.9 to 26.8
 	healingUptime = 240,
 	brainwashUptime = 240,
 	hex = 5,

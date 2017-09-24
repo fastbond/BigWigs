@@ -4,7 +4,7 @@
 
 local module, L = BigWigs:ModuleDeclaration("Emeriss", "Ashenvale")
 
-module.revision = 20008 -- To be overridden by the module!
+module.revision = 20009 -- To be overridden by the module!
 module.enabletrigger = module.translatedName -- string or table {boss, add1, add2}
 module.toggleoptions = {"noxious", "volatileyou", "volatileother", "bosskill"}
 module.zonename = {
@@ -20,8 +20,8 @@ module.zonename = {
 ---------------------------------
 
 local timer = {
-	firstBreath = 7,
-	breath = 9,
+	firstBreath = 8,
+	breath = 18,
 	corruption = 10,
 }
 local icon = {

@@ -5,7 +5,7 @@
 
 local module, L = BigWigs:ModuleDeclaration("Onyxia", "Onyxia's Lair")
 
-module.revision = 20004 -- To be overridden by the module!
+module.revision = 20005 -- To be overridden by the module!
 module.enabletrigger = module.translatedName -- string or table {boss, add1, add2}
 module.toggleoptions = {"flamebreath", "deepbreath", "wingbuffet", "fireball", "phase", "onyfear", "bosskill"}
 
@@ -157,7 +157,7 @@ function module:OnEnable()
 	self:RegisterEvent("CHAT_MSG_RAID_BOSS_EMOTE")
 	self:RegisterEvent("CHAT_MSG_MONSTER_YELL")
 	self:RegisterEvent("CHAT_MSG_SPELL_CREATURE_VS_CREATURE_DAMAGE")
-	self:RegisterEvent("UNIT_HEALTH")
+	--self:RegisterEvent("UNIT_HEALTH")
 	self:RegisterEvent("CHAT_MSG_SPELL_AURA_GONE_SELF")
 
 	self:ThrottleSync(10, syncName.deepbreath)
@@ -207,7 +207,7 @@ function module:CHAT_MSG_MONSTER_YELL(msg)
 	end
 end
 
-function module:UNIT_HEALTH(arg1) --temporary workaround until Phase2 yell gets fixed
+--[[function module:UNIT_HEALTH(arg1) --temporary workaround until Phase2 yell gets fixed
 	if UnitName(arg1) == module.translatedName then
 		local health = UnitHealth(arg1)
 		if health > 60 and health <= 65 and not transitioned then
@@ -215,8 +215,9 @@ function module:UNIT_HEALTH(arg1) --temporary workaround until Phase2 yell gets 
 		elseif health > 65 then
 			transitioned = false
 		end
+	end
 end
-end
+--]]
 
 function module:CHAT_MSG_SPELL_CREATURE_VS_CREATURE_DAMAGE(msg)
 	if msg == L["fear_trigger"] then

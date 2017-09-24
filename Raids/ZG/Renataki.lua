@@ -57,13 +57,13 @@ L:RegisterTranslations("deDE", function() return {
 ---------------------------------
 
 -- module variables
-module.revision = 20006 -- To be overridden by the module!
+module.revision = 20007 -- To be overridden by the module!
 module.enabletrigger = module.translatedName -- string or table {boss, add1, add2}
 module.toggleoptions = {"vanish", "enraged", "bosskill"}
 
 -- locals
 local timer = {
-	vanishSoon = 28,
+	vanishSoon = 22,
 	unvanish = 20,
 }
 local icon = {

@@ -5,7 +5,7 @@
 
 local module, L = BigWigs:ModuleDeclaration("Magmadar", "Molten Core")
 
-module.revision = 20005 -- To be overridden by the module!
+module.revision = 20006 -- To be overridden by the module!
 module.enabletrigger = module.translatedName -- string or table {boss, add1, add2}
 module.toggleoptions = {"panic", "frenzy", "bosskill"}
 
@@ -203,6 +203,6 @@ function module:FrenzyOver()
 	self:RemoveBar(L["frenzy_bar"])
 	self:RemoveWarningSign(icon.tranquil, true)
 	if lastFrenzy ~=0 then
-		self:Bar(L["frenzynext_bar"], lastFrenzy + nextFrenzy - GetTime(), icon.frenzy, true, "White")
+		self:Bar(L["frenzynext_bar"], lastFrenzy + timer.nextFrenzy - GetTime(), icon.frenzy, true, "White")
 	end
 end

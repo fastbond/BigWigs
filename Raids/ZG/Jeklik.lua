@@ -170,7 +170,7 @@ L:RegisterTranslations("deDE", function() return {
 ---------------------------------
 
 -- module variables
-module.revision = 20007 -- To be overridden by the module!
+module.revision = 20008 -- To be overridden by the module!
 module.enabletrigger = module.translatedName -- string or table {boss, add1, add2}
 --module.wipemobs = { L["add_name"] } -- adds which will be considered in CheckForEngage
 module.toggleoptions = {"phase", "heal", "flay", "fear", "swarm", "bomb", "announce", "bosskill"}
@@ -182,12 +182,12 @@ module.toggleoptions = {"phase", "heal", "flay", "fear", "swarm", "bomb", "annou
 
 -- locals
 local timer = {
-	firstFear = 12,
-	fear = 30,
-	firstSilence = 12,
+	firstFear = 45,
+	fear = 45,
+	firstSilence = 8,
 	healCast = 4,
 	nextHeal = 20,
-	fear2 = 39.5,
+	fear2 = 45,
 	fireBombs = 10,
 	mindflay = 25,
 	bats = 45,
@@ -248,6 +248,8 @@ function module:OnEnable()
 	self:RegisterEvent("CHAT_MSG_COMBAT_CREATURE_VS_SELF_HITS", "Event")
 	self:RegisterEvent("CHAT_MSG_COMBAT_CREATURE_VS_PARTY_HITS", "Event")
 	self:RegisterEvent("CHAT_MSG_COMBAT_CREATURE_VS_CREATURE_HITS", "Event")
+	
+	self:RegisterEvent("CHAT_MSG_MONSTER_YELL")
 
 	self:ThrottleSync(10, syncName.fear)
 	self:ThrottleSync(10, syncName.fear2)
@@ -269,9 +271,10 @@ end
 -- called after boss is engaged
 function module:OnEngage()
 	self.phase = 1
-	if self.db.profile.fear then
+	--[[if self.db.profile.fear then
 		self:Bar(L["fearreptext"], timer.firstFear, icon.fear)
 	end
+	--]]
 	if self.db.profile.phase then
 		self:Message(L["phaseone_message"], "Attention")
 	end
@@ -291,6 +294,12 @@ end
 ------------------------------
 --      Events              --
 ------------------------------
+
+function module:CHAT_MSG_MONSTER_YELL(msg)
+	if string.find(msg, L["phasetwo_trigger"]) then
+		self:Sync("JeklikPhaseTwo")
+	end
+end
 
 function module:Event(msg)
 	local _,_,mindflayother,_ = string.find(msg, L["mindflayother_trigger"])

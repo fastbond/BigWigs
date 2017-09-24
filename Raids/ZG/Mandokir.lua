@@ -16,6 +16,8 @@ L:RegisterTranslations("enUS", function() return {
 
 	engage_trigger = "feed your souls to Hakkar himself",
 	watch_trigger = "(.+)! I'm watching you!",
+	charge_trigger = "Bloodlord Mandokir's Charge",
+	charge_bar = "Next Charge",
 	gaze_trigger = "Bloodlord Mandokir begins to cast Threatening Gaze.",
 	gazeafflictyou = "You are afflicted by Threatening Gaze.",
 	gazeafflictother = "(.+) is afflicted by Threatening Gaze.",
@@ -118,7 +120,7 @@ L:RegisterTranslations("deDE", function() return {
 ---------------------------------
 
 -- module variables
-module.revision = 20005 -- To be overridden by the module!
+module.revision = 20006 -- To be overridden by the module!
 module.enabletrigger = module.translatedName -- string or table {boss, add1, add2}
 module.wipemobs = { L["ohgan"] } -- adds which will be considered in CheckForEngage
 module.toggleoptions = {"gaze", "announce", "puticon", "whirlwind", "enraged", "bosskill"}
@@ -126,9 +128,18 @@ module.toggleoptions = {"gaze", "announce", "puticon", "whirlwind", "enraged", "
 
 -- locals
 local timer = {
-	firstCharge = 15,
-	firstWhirlwind = 20,
-	firstGaze = 33,
+	firstCharge = 21,
+	chargeInterval = 45,
+	
+	whirlwindCast = 2,
+	earliestFirstWhirlwind = 14,
+	latestFirstWhirlwind = 17,
+	whirlwindInterval = 19,
+	
+	gazeDuration = 6,
+	gazeCast = 2,
+	firstGaze = 19,
+	gazeInterval = 20,
 
 	gaze = 20,
 }
@@ -136,6 +147,7 @@ local icon = {
 	charge = "Ability_Warrior_Charge",
 	whirlwind = "Ability_Whirlwind",
 	gaze = "Spell_Shadow_Charm",
+	charge = "ability_warrior_charge"
 }
 local syncName = {
 	whirlwind = "MandokirWWStart"..module.revision,
@@ -145,6 +157,7 @@ local syncName = {
 	gazeCast = "MandokirGazeCast"..module.revision,
 	gazeAfflicted = "MandokirGazeAfflict"..module.revision,
 	gazeOver = "MandokirGazeEnd"..module.revision,
+	charge = "MandokirCharge"..module.revision,
 }
 
 --[[
@@ -187,6 +200,7 @@ function module:OnEnable()
 	self:ThrottleSync(5, syncName.gazeCast)
 	self:ThrottleSync(5, syncName.gazeAfflicted)
 	self:ThrottleSync(5, syncName.gazeOver)
+	self:ThrottleSync(5, syncName.charge)
 end
 
 -- called after module is enabled and after each wipe
@@ -196,8 +210,7 @@ end
 -- called after boss is engaged
 function module:OnEngage()
 	self:Bar("Charge", timer.firstCharge, icon.charge)
-	-- todo check combat log regarding CHARGE to trigger the ones following the first
-	self:Bar("Next Whirlwind", timer.firstWhirlwind, icon.whirlwind)
+	self:IntervalBar("Next Whirlwind", timer.earliestFirstWhirlwind, timer.latestFirstWhirlwind, icon.whirlwind)
 	self:Bar(L["Possible Gaze"], timer.firstGaze, icon.gaze)
 end
 
@@ -259,6 +272,8 @@ function module:Event(msg)
 		--	self:Sync("MandokirGazeEnd "..UnitName("player"))
 		--elseif gazeddeathend then
 		--	self:Sync("MandokirGazeEnd "..gazeddeathend)
+	elseif string.find(msg, L["charge_trigger"]) then
+		self:Sync(syncName.charge)
 	end
 end
 
@@ -269,21 +284,21 @@ end
 
 function module:BigWigs_RecvSync(sync, rest, nick)
 	if sync == syncName.whirlwind and self.db.profile.whirlwind then
-		self:Bar(L["ww"], 2, icon.whirlwind)
+		self:Bar(L["ww"], timer.whirlwindCast, icon.whirlwind)
 		--self:ScheduleEvent("BigWigs_StartBar", 2, self, "Next Whirlwind", 18, icon.whirlwind)
 	elseif sync == syncName.whirlwindOver and self.db.profile.whirlwind then
 		self:RemoveBar(L["ww"])
-		self:Bar("Next Whirlwind", 18, icon.whirlwind)
+		self:Bar("Next Whirlwind", timer.whirlwindInterval, icon.whirlwind)
 	elseif sync == syncName.enrage and self.db.profile.enraged then
 		self:Message(L["enraged_message"], "Urgent")
 		self:Bar(L["enragebar"], 90, "Spell_Shadow_UnholyFrenzy")
 	elseif sync == syncName.enrageOver and self.db.profile.enraged then
 		self:RemoveBar(L["enragebar"])
 	elseif sync == syncName.gazeCast and self.db.profile.gaze then
-		self:Bar(L["gazecast"], 2, icon.gaze)
+		self:Bar(L["gazecast"], timer.gazeCast, icon.gaze)
 		self:RemoveBar(L["Possible Gaze"])
 	elseif sync == syncName.gazeAfflicted and self.db.profile.gaze then
-		self:Bar(string.format(L["gazewatchedbar"], rest), 5, icon.gaze, true, "Black")
+		self:Bar(string.format(L["gazewatchedbar"], rest), timer.gazeDuration, icon.gaze, true, "Black")
 	elseif sync == syncName.gazeOver then
 		if self.db.profile.gaze then
 			self:RemoveBar(string.format(L["gazewatchedbar"], rest))
@@ -292,5 +307,7 @@ function module:BigWigs_RecvSync(sync, rest, nick)
 			self:RemoveIcon(rest)
 		end
 		self:Bar(L["Possible Gaze"], timer.gaze, icon.gaze)
+	elseif sync == syncName.charge then
+		self:Bar(L["charge_bar"], timer.chargeInterval, icon.charge)
 	end
 end

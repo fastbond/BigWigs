@@ -43,7 +43,7 @@ L:RegisterTranslations("enUS", function() return {
 	["Nr Replies"] = true,
 	["Ancient"] = true,
 
-	["Your version of Big Wigs Elysium is out of date!\nPlease visit https://github.com/Hosq/BigWigs to get the latest version."] = true,
+	["Your version of Big Wigs Kronos is out of date!\nPlease visit https://github.com/Vnm-Kronos/BigWigs/ to get the latest version."] = true,
 	["Close"] = true,
 	["Cancel"] = true,
 
@@ -51,7 +51,7 @@ L:RegisterTranslations("enUS", function() return {
 	["Notify old versions"] = true,
 	["Notify old versions"] = true,
 	["List people with old versions to raid chat."] = true,
-	["Download newest version from https://github.com/Hosq/BigWigs"] = true,
+	["Download newest version from https://github.com/Vnm-Kronos/BigWigs/"] = true,
 
 	["Show popup"] = true,
 	["Show popup warning on out of date version"] = true,
@@ -85,7 +85,7 @@ L:RegisterTranslations("deDE", function() return {
 	["Nr Replies"] = "Anzahl der Antworten",
 	["Ancient"] = "Alt",
 
-	["Your version of Big Wigs Elysium is out of date!\nPlease visit https://github.com/Hosq/BigWigs to get the latest version."] = "Deine Version von Big Wigs Elysium ist veraltet! Bitte downloade die neuste Version von https://github.com/Hosq/BigWigs",
+	["Your version of Big Wigs Kronos is out of date!\nPlease visit https://github.com/Vnm-Kronos/BigWigs/ to get the latest version."] = "Deine Version von Big Wigs Kronos ist veraltet! Bitte downloade die neuste Version von https://github.com/Vnm-Kronos/BigWigs/",
 	["Close"] = "Schliessen",
 	["Cancel"] = "Abbrechen",
 } end )
@@ -252,12 +252,12 @@ end
 function BigWigsVersionQuery:IsOutOfDate()
 	if not self.OutOfDateShown then
 		self.OutOfDateShown = true
-		BigWigs:Print(L["Your version of Big Wigs Elysium is out of date!\nPlease visit https://github.com/Hosq/BigWigs to get the latest version."])
+		BigWigs:Print(L["Your version of Big Wigs Kronos is out of date!\nPlease visit https://github.com/Vnm-Kronos/BigWigs/ to get the latest version."])
 
 		if self.db.profile.popup then
 			local dialog = nil
 			StaticPopupDialogs["BigWigsOutOfDateDialog"] = {
-				text = L["Your version of Big Wigs Elysium is out of date!\nPlease visit https://github.com/Hosq/BigWigs to get the latest version."],
+				text = L["Your version of Big Wigs Kronos is out of date!\nPlease visit https://github.com/Vnm-Kronos/BigWigs/ to get the latest version."],
 				button1 = L["Close"],
 				button2 = L["Cancel"],
 				OnAccept = function()
@@ -268,7 +268,7 @@ function BigWigsVersionQuery:IsOutOfDate()
 				end,
 				OnShow = function (self, data)
 					local editbox = getglobal(this:GetName().."WideEditBox")
-					editbox:SetText("https://github.com/Hosq/BigWigs")
+					editbox:SetText("https://github.com/Vnm-Kronos/BigWigs/")
 					editbox:SetWidth(250)
 					editbox:ClearFocus()
 					editbox:HighlightText()
@@ -302,7 +302,7 @@ function BigWigsVersionQuery:NotifyOldVersions()
 	end
 	SendChatMessage(L["People with outdated BigWigs:"],"RAID")
 	SendChatMessage(line,"RAID")
-	SendChatMessage(L["Download newest version from https://github.com/Hosq/BigWigs"], "RAID")
+	SendChatMessage(L["Download newest version from https://github.com/Vnm-Kronos/BigWigs/"], "RAID")
 end
 
 function BigWigsVersionQuery:OnTooltipUpdate()

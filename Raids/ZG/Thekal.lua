@@ -22,6 +22,7 @@ L:RegisterTranslations("enUS", function() return {
 	tigers_trigger = "High Priest Thekal performs Summon Zulian Guardians.",
 	forcepunch_trigger = "High Priest Thekal begins to perform Force Punch.",
 	forcepunch_bar = "Force Punch",
+	forcepunchCD_bar = "Force Punch CD",
 	heal_trigger = "Zealot Lor'Khan begins to cast Great Heal.",
 	enrage_trigger = "High Priest Thekal gains Enrage\.",
 	enrage_message = "Boss is enraged! Spam heals!",
@@ -199,7 +200,7 @@ L:RegisterTranslations("deDE", function() return {
 ---------------------------------
 
 -- module variables
-module.revision = 20007 -- To be overridden by the module!
+module.revision = 20008 -- To be overridden by the module!
 module.enabletrigger = module.translatedName -- string or table {boss, add1, add2}
 module.wipemobs = {L["roguename"], L["shamanname"]} -- adds which will be considered in CheckForEngage
 module.toggleoptions = {"bloodlust", "silence", "cleave", "heal", "disarm", -1, "phase", "punch", "tigers", "frenzy", "enraged", "bosskill"}
@@ -209,7 +210,7 @@ module.toggleoptions = {"bloodlust", "silence", "cleave", "heal", "disarm", -1, 
 local timer = {
 	forcePunch = 1,
 	phase2 = 9,
-	knockback = 4,
+	nextForcePunch = 20,
 	adds = 25,
 	bloodlust = 30,
 }
@@ -285,7 +286,7 @@ end
 -- called after boss is engaged
 function module:OnEngage()
 	self.phase = 1
-	self:ScheduleRepeatingEvent("checkphasechange", self.PhaseChangeCheck, 0.5, self)
+	--self:ScheduleRepeatingEvent("checkphasechange", self.PhaseChangeCheck, 0.5, self)
 end
 
 -- called after boss is disengaged (wipe(retreat) or victory)
@@ -381,6 +382,7 @@ end
 function module:CHAT_MSG_SPELL_CREATURE_VS_CREATURE_DAMAGE(msg)
 	if msg == L["forcepunch_trigger"] then
 		self:Bar(L["forcepunch_bar"], timer.forcePunch, icon.forcePunch)
+		self:Delayedbar(timer.forcePunch, L["forcepunchCD_bar"], timer.forcePunchCD-timer.forcePunch, icon.forcePunch)
 	end
 end
 
@@ -417,12 +419,13 @@ end
 function module:BigWigs_RecvSync(sync, rest, nick)
 	if sync == syncName.phase2 and self.phase < 2 then
 		self.phase = 2
-		self:RemoveBar(L["phasetwo_bar"])
+		--self:RemoveBar(L["phasetwo_bar"])
 		self:TigerPhase()
-	elseif sync == syncName.phasechange then
+	--[[elseif sync == syncName.phasechange then
 		self:CancelScheduledEvent("checkphasechange")
 		self.phase = 1.5
 		self:Bar(L["phasetwo_bar"], timer.phase2, icon.phase2)
+		--]]
 	elseif sync == syncName.heal and self.db.profile.heal then
 		self:Message(L["heal_message"], "Attention", "Alarm")
 		self:Bar(L["heal_bar"], 4, icon.heal, true, "Black")
@@ -460,6 +463,4 @@ function module:TigerPhase()
 	if self.db.profile.phase then
 		self:Message(L["phasetwo_message"], "Attention")
 	end
-	self:Bar(L["New Adds"], timer.adds, icon.adds)
-	self:Bar(L["Knockback"], timer.knockback, icon.knockback)
 end

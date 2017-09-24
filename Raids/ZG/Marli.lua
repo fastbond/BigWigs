@@ -26,6 +26,12 @@ L:RegisterTranslations("enUS", function() return {
 	pbvresist_trigger = "High Priestess Mar'li 's Poison Bolt Volley was resisted(.+)",
 	pbvimmune_trigger = "High Priestess Mar'li 's Poison Bolt Volley fail(.+) immune",
 	you = "you",
+	
+	spiderphase_bar = "Next Spider Phase",
+	trollphase_bar = "Next Troll Phase",
+	charge_bar = "Charge CD",
+	charge_trigger = "High Priestess Mar'li's Charge",
+	
 	drainlife = "Drain Life",
 	spiders_message = "Spiders spawned!",
 	drainlife_message = "Drain Life! Interrupt/dispel it!",
@@ -50,6 +56,10 @@ L:RegisterTranslations("enUS", function() return {
 	phase_cmd = "phase",
 	phase_name = "Phase Notification",
 	phase_desc = "Announces the boss' phase transition",
+	
+	charge_cmd = "charge",
+	charge_name = "Charge Alert",
+	charge_desc = "Warn for Charge",
 } end )
 
 L:RegisterTranslations("deDE", function() return {
@@ -100,20 +110,22 @@ L:RegisterTranslations("deDE", function() return {
 ---------------------------------
 
 -- module variables
-module.revision = 20004 -- To be overridden by the module!
+module.revision = 20005 -- To be overridden by the module!
 module.enabletrigger = module.translatedName -- string or table {boss, add1, add2}
 module.wipemobs = { L["spawn_name"] } -- adds which will be considered in CheckForEngage
-module.toggleoptions = {"phase", "spider", "drain", "volley", "bosskill"}
+module.toggleoptions = {"phase", "spider", "drain", "volley", "charge", -1, "bosskill"}
 
 
 -- locals
 local timer = {
-	charge = 10,
-	teleport = 30,
+	chargeInterval = 15,
+	nextTrollPhase = 45,
+	nextSpiderPhase = 40,
 }
 local icon = {
-	charge = "Spell_Frost_FrostShock",
-	teleport = "Spell_Arcane_Blink",
+	trollPhase = "Spell_Nature_Web",
+	spiderPhase = "Inv_misc_head_troll_02",
+	charge = "Ability_Warrior_Charge",
 }
 local syncName = {
 	drain = "MarliDrainStart"..module.revision,
@@ -122,8 +134,9 @@ local syncName = {
 	spiderPhase = "MarliSpiderPhase"..module.revision,
 	spiders = "MarliSpiders"..module.revision,
 	volley = "MarliVolley"..module.revision,
+	charge = "MarliCharge"..module.revision,
 }
-
+local chargecount = 0
 
 ------------------------------
 --      Initialization      --
@@ -154,10 +167,12 @@ end
 
 -- called after module is enabled and after each wipe
 function module:OnSetup()
+	chargecount = 0
 end
 
 -- called after boss is engaged
 function module:OnEngage()
+	self:Sync(syncName.trollPhase)
 end
 
 -- called after boss is disengaged (wipe(retreat) or victory)
@@ -194,6 +209,8 @@ function module:Event(msg)
 		elseif drainlifeotherend and drainlifeotherend ~= L["you"] and (UnitIsInRaidByName(drainlifeotherstart) or UnitIsPetByName(drainlifeotherstart)) then
 			self:Sync(syncName.drainOver)
 		end
+	elseif string.find(msg, L["charge_trigger"]) then
+		self:Sync(syncName.charge)
 	end
 end
 
@@ -206,9 +223,12 @@ function module:BigWigs_RecvSync(sync, rest, nick)
 	if sync == syncName.spiders and self.db.profile.spider then
 		self:Message(L["spiders_message"], "Attention")
 	elseif sync == syncName.trollPhase and self.db.profile.phase then
+		self:Bar(L["spiderphase_bar"], timer.nextSpiderPhase, icon.spiderPhase)
 		self:Message(L["trollphase"], "Attention")
+		chargecount = 0
 	elseif sync == syncName.spiderPhase then
 		if self.db.profile.phase then
+			self:Bar(L["trollphase_bar"], timer.nextTrollPhase, icon.trollPhase)
 			self:Message(L["spiderphase"], "Attention")
 		end
 		if self.db.profile.drain then
@@ -218,12 +238,17 @@ function module:BigWigs_RecvSync(sync, rest, nick)
 			self:RemoveBar(L["pbv"])
 		end
 	elseif sync == syncName.volley and self.db.profile.volley then
-		self:Bar(L["pbv"], 13, "Spell_Nature_CorrosiveBreath")
+		self:IntervalBar(L["pbv"], 13, 19, "Spell_Nature_CorrosiveBreath")
 	elseif sync == syncName.drain and self.db.profile.drain then
 		self:Bar(L["drainlife"], 7, "Spell_Shadow_LifeDrain02")
 		self:Message(L["drainlife_message"], "Attention")
 	elseif sync == syncName.drainOver and self.db.profile.drain then
 		self:RemoveBar(L["drainlife"])
+	elseif sync == syncName.charge and self.db.profile.charge then
+		chargecount = chargecount + 1
+		if chargecount < 3 then
+			self:Bar(L["charge_bar"], timer.chargeInterval, icon.charge)
+		end
 	end
 end
 

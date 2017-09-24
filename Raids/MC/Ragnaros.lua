@@ -5,7 +5,7 @@
 
 local module, L = BigWigs:ModuleDeclaration("Ragnaros", "Molten Core")
 
-module.revision = 20010 -- To be overridden by the module!
+module.revision = 20011 -- To be overridden by the module!
 module.enabletrigger = module.translatedName -- string or table {boss, add1, add2}
 module.toggleoptions = {"start", "aoeknock", "submerge", "emerge", "adds", "bosskill"}
 
@@ -58,7 +58,7 @@ L:RegisterTranslations("enUS", function() return {
 	submerge_trigger = "^COME FORTH,",
 	submerge_trigger2 = "^YOU CANNOT DEFEAT THE LIVING FLAME,",
 	engage_trigger = "^NOW FOR YOU",
-	engage_soon_trigger1 = "Imprudent whelps!",
+	engage_soon_trigger1 = "Impudent whelps!",
 	engage_soon_trigger2 = "TOO SOON! YOU HAVE AWAKENED ME TOO SOON",
 	engage_soon_trigger3 = "YOU ALLOWED THESE INSECTS",
 	hammer_trigger = "^BY FIRE BE PURGED!",

@@ -35,6 +35,7 @@ L:RegisterTranslations("enUS", function() return {
 	deadbosstrigger                 = "High Priest Venoxis dies",
 
 	holyfirebar         = "Holy Fire",
+	holyfirecd_bar		= "Holy Fire CD",
 	renewbar            = "Renew",
 	renew_message       = "Renew! Dispel it!",
 	phase1_message      = "Troll Phase",
@@ -140,7 +141,7 @@ L:RegisterTranslations("deDE", function() return {
 ---------------------------------
 
 -- module variables
-module.revision = 20004 -- To be overridden by the module!
+module.revision = 20005 -- To be overridden by the module!
 module.enabletrigger = module.translatedName -- string or table {boss, add1, add2}
 module.wipemobs = { L["add_name"] } -- adds which will be considered in CheckForEngage
 module.toggleoptions = {"phase", "adds", "renew", "holyfire", "enrage", "announce", "bosskill"}
@@ -149,8 +150,8 @@ module.toggleoptions = {"phase", "adds", "renew", "holyfire", "enrage", "announc
 -- locals
 local timer = {
 	holyfireCast = 3.5,
-	holyfire = 8,
-	renew = 20,
+	holyfire = 15,
+	renew = 15,
 }
 local icon = {
 	addDead = "INV_WAEPON_BOW_ZULGRUB_D_01",
@@ -330,7 +331,7 @@ function module:BigWigs_RecvSync(sync, rest, nick)
 		castingholyfire = 1
 		if self.db.profile.holyfire then
 			self:Bar(L["holyfirebar"], timer.holyfireCast, icon.holyfire, true, "red")
-			self:Bar("Next Holy Fire", timer.holyfire, icon.holyfire)
+			self:DelayedBar(timer.holyfireCast, L["holyfirecd_bar"], timer.holyfire, icon.holyfire)
 		end
 	elseif sync == "VenoxisHolyFireStop" then
 		castingholyfire = 0

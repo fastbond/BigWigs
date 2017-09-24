@@ -5,7 +5,7 @@
 
 local module, L = BigWigs:ModuleDeclaration("Gurubashi Berserker", "Zul'Gurub")
 
-module.revision = 20001
+module.revision = 20003
 module.enabletrigger = module.translatedName
 module.toggleoptions = {"bars"--[[, "bosskill"]]}
 
@@ -14,10 +14,11 @@ module.toggleoptions = {"bars"--[[, "bosskill"]]}
 ------------------------------
 
 local timer = {
-	firstFear = 15,
-	fear = 25,
-	thunderClap = 5,
-	knockBack = 10
+	fear = 15,
+	firstThunderClap = 4,
+	thunderClap = 16,
+	firstKnockBack = 8,
+	knockBack = 12.5,
 }
 local icon = {
 	fear = "Ability_GolemThunderClap",
@@ -35,9 +36,9 @@ local syncName = {
 ----------------------------
 
 L:RegisterTranslations("enUS", function() return {
-	ThunderClap = "ThunderClap",
-	KnockBack = "KnockBack",
-	Fear = "Fear",
+	ThunderClap = "ThunderClap CD",
+	KnockBack = "KnockBack CD",
+	Fear = "Fear CD",
 
 	trigger1 = "afflicted by Intimidating Roar",
 	trigger2 = "Intimidating Roar fail(.+) immune.",
@@ -97,9 +98,10 @@ end
 function module:OnEngage()
 	if self.db.profile.bars then
 		self:DelayedSync(timer.knockBack, syncName.knockBack)
-		self:Bar(L["ThunderClap"], timer.thunderClap, icon.thunderClap)
-		self:Bar(L["Fear"], timer.firstFear, icon.fear)
-		self:Bar(L["KnockBack"], timer.knockBack, icon.knockBack)
+		self:Bar(L["ThunderClap"], timer.firstThunderClap, icon.thunderClap)
+		--first fear comes when it comes
+		--self:Bar(L["Fear"], timer.firstFear, icon.fear)
+		self:Bar(L["KnockBack"], timer.firstKnockBack, icon.knockBack)
 	end
 end
 

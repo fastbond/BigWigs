@@ -16,6 +16,8 @@ L:RegisterTranslations("enUS", function() return {
 	poisonousblood_trigger = "You are afflicted by Poisonous Blood.",
 	mindcontrolyou_trigger = "You are afflicted by Cause Insanity.",
 	mindcontrolother_trigger = "(.+) is afflicted by Cause Insanity.",
+	willyou_trigger = "You are afflicted by Will of Hakkar.",
+	willother_trigger = "(.+) is afflicted by Will of Hakkar.",
 	flee_trigger = "Fleeing will do you no good, mortals!",
 	aspectofthekal_trigger = "Hakkar gains Aspect of Thekal.",
 	aspectofthekalend_trigger = "Aspect of Thekal fades from Hakkar.",
@@ -202,7 +204,7 @@ L:RegisterTranslations("deDE", function() return {
 ---------------------------------
 
 -- module variables
-module.revision = 20006 -- To be overridden by the module!
+module.revision = 20007 -- To be overridden by the module!
 module.enabletrigger = module.translatedName -- string or table {boss, add1, add2}
 --module.wipemobs = { L["add_name"] } -- adds which will be considered in CheckForEngage
 module.toggleoptions = {"mc", "puticon", "siphon", "enrage", -1, "aspectjeklik", "aspectvenoxis", "aspectmarli", "aspectthekal", "aspectarlokk", "bosskill"}
@@ -217,6 +219,8 @@ local timer = {
 	enrage = 600,
 	bloodSiphon = 90,
 	firstMindcontrol = 17,
+	nextMindcontrol = 10,
+	willOfHakkar = 20,
 }
 local icon = {
 	enrage = "Spell_Shadow_UnholyFrenzy",
@@ -234,6 +238,7 @@ local icon = {
 local syncName = {
 	bloodSiphon = "HakkarBloodSiphon"..module.revision,
 	mindcontrol = "HakkarMC"..module.revision,
+	willofhakkar = "HakkarWill"..module.revision,
 
 	-- aspects
 	jeklik = "HakkarAspectJeklik"..module.revision,
@@ -323,6 +328,8 @@ end
 function module:Self(msg)
 	if msg == L["mindcontrolyou_trigger"] then
 		self:Sync(syncName.mindcontrol .. " "..UnitName("player"))
+	elseif msg == L["willyou_trigger"] then
+		self:Sync(syncName.willofhakkar.." "..UnitName("player"))
 	elseif string.find(msg, L["poisonousblood_trigger"]) then
 		self:RemoveWarningSign(icon.serpent)
 
@@ -397,8 +404,11 @@ end
 
 function module:CHAT_MSG_SPELL_PERIODIC_HOSTILEPLAYER_DAMAGE(msg)
 	local _, _, mindcontrolother, _ = string.find(msg, L["mindcontrolother_trigger"])
+	local _, _, willother, _ = string.find(msg, L["willother_trigger"])
 	if mindcontrolother then
 		self:Sync(syncName.mindcontrol .. " "..mindcontrolother)
+	elseif willother then
+		self:Sync(syncName.willofhakkar.." "..willother)
 	end
 end
 
@@ -412,7 +422,9 @@ function module:BigWigs_RecvSync(sync, rest, nick)
 		self:BloodSiphon()
 	elseif sync == syncName.mindcontrol and rest then
 		self:MindControl(rest)
-
+	elseif sync == syncName.willofhakkar and rest then
+		self:WillOfHakkar(rest)
+		
 		-- aspects
 	elseif sync == syncName.jeklik and self.db.profile.aspectjeklik then
 		self:Bar(L["aspectjeklik_bar"], 10, icon.jeklik, true, "Orange")
@@ -473,8 +485,8 @@ end
 
 function module:MindControl(rest)
 	if self.db.profile.mc and rest then
-		self:DelayedBar(10, L["nextmc_bar"], 11, icon.mindcontrol)
-		self:Bar(string.format(L["mindcontrol_bar"], rest), 10, icon.mindcontrol, true, "White")
+		self:Bar(L["nextmc_bar"], timer.nextMindcontrol, icon.mindcontrol, true, "Blue")
+		self:Bar(string.format(L["mindcontrol_bar"], rest), timer.nextMindcontrol, icon.mindcontrol, true, "White")
 		if rest == UnitName("player") then
 			self:Message(L["mindcontrol_message_you"], "Attention", true, "Alarm")
 		else
@@ -483,5 +495,20 @@ function module:MindControl(rest)
 	end
 	if self.db.profile.puticon then
 		self:Icon(rest)
+	end
+end
+
+function module:WillOfHakkar(rest)
+	if self.db.profile.mc and rest then
+		self:Bar(L["nextmc_bar"], timer.nextMindcontrol, icon.mindcontrol, true, "Blue")
+		self:Bar(string.format(L["mindcontrol_bar"], rest), timer.willOfHakkar, icon.mindcontrol, true, "Gray")
+		if rest == UnitName("player") then
+			self:Message(L["mindcontrol_message_you"], "Attention", true, "Alarm")
+		else
+			self:Message(string.format(L["mindcontrol_message"], rest), "Attention")
+		end
+	end
+	if self.db.profile.puticon then
+		self:Icon(rest, 2)
 	end
 end

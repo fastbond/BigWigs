@@ -15,3 +15,4 @@ Currently, only english clients are supported. In general, the Addon can work wi
 The adjustments were originally made by <a href="https://github.com/MOUZU"><b>LYQ</b></a> and <a href="https://github.com/xorann/BigWigs"><b>Dorann</b></a><br>
 Adjustments for Elysium made by <b>Hosq</b>.<br>
 Adjustments for Kronos made by <b>Vnm</b>.<br>
+Special thanks to <b>Masil</b> for Kronos adjustments.

@@ -30,7 +30,7 @@ L:RegisterTranslations("enUS", function() return {
 
 	gaintrigger = "Anub'Rekhan gains Locust Swarm.",
 	gainendwarn = "Locust Swarm ended!",
-	gainnextwarn = "Next Locust Swarm in ~90 sec",
+	gainnextwarn = "Next Locust Swarm in ~80 sec",
 	gainwarn10sec = "~10 Seconds until Locust Swarm",
 	gainincbar = "Possible Locust Swarm",
 	gainbar = "Locust Swarm",
@@ -53,7 +53,7 @@ L:RegisterTranslations("enUS", function() return {
 ---------------------------------
 
 -- module variables
-module.revision = 20010 -- To be overridden by the module!
+module.revision = 20011 -- To be overridden by the module!
 module.enabletrigger = module.translatedName -- string or table {boss, add1, add2}
 --module.wipemobs = { L["add_name"] } -- adds which will be considered in CheckForEngage
 module.toggleoptions = {"locust", "impale", "enrage", "bosskill"}
@@ -61,8 +61,8 @@ module.toggleoptions = {"locust", "impale", "enrage", "bosskill"}
 
 -- locals
 local timer = {
-	firstLocustSwarm = {80,120},
-	locustSwarmInterval = {90,110},
+	firstLocustSwarm = {80,100},
+	locustSwarmInterval = {80,100},
 	locustSwarmDuration = 20,
 	locustSwarmCastTime = 3,
 	impale = {12,18},

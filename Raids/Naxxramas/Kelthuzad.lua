@@ -128,6 +128,7 @@ L:RegisterTranslations("enUS", function() return {
 	detonate_bar = "Detonate Mana - %s",
 	detonate_possible_bar = "Detonate Mana",
 	detonate_warning = "%s has Detonate Mana!",
+	detonate_onme = "Detonate Mana on ",
 
 	you = "You",
 	are = "are",
@@ -143,7 +144,7 @@ L:RegisterTranslations("enUS", function() return {
 ---------------------------------
 
 -- module variables
-module.revision = 20004 -- To be overridden by the module!
+module.revision = 20005 -- To be overridden by the module!
 module.enabletrigger = module.translatedName -- string or table {boss, add1, add2}
 --module.wipemobs = { L["add_name"] } -- adds which will be considered in CheckForEngage
 module.toggleoptions = {"frostbolt", "frostboltbar", -1, "frostblast", "proximity", "fissure", "mc", -1, "fbvolley", -1, "detonate", "detonateicon", -1 ,"guardians", -1, "addcount", "phase", "bosskill"}
@@ -425,7 +426,7 @@ function module:BigWigs_RecvSync(sync, rest, nick)
 	elseif sync == syncName.frostblast then
 		self:FrostBlast()
 	elseif sync == syncName.detonate and rest then
-		self:Detonate()
+		self:Detonate(rest)
 	elseif sync == syncName.frostbolt then       -- changed from only frostbolt (thats only alert, if someone still wants to see the bar, it wouldnt work then)
 		self:Frostbolt()
 	elseif sync == syncName.frostboltOver then
@@ -509,6 +510,9 @@ end
 
 function module:Detonate(name)
 	if name and self.db.profile.detonate then
+		if name == UnitName("player") then
+			self:SendSay(L["detonate_onme"] .. UnitName("player") .. "!")
+		end
 		self:Message(string.format(L["detonate_warning"], name), "Attention")
 		if self.db.profile.detonateicon then
 			self:Icon(name)

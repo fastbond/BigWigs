@@ -25,6 +25,7 @@ L:RegisterTranslations("enUS", function() return {
 	gazeendother = "Threatening Gaze fades from (.+).",
 	gazecast = "Incoming Threatening Gaze!",
 	gazewatchedbar = "Threatening Gaze: %s",
+	gaze_onme = "Gaze on ",
 	enragegain = "Bloodlord Mandokir gains Enrage.",
 	enragefade = "Enrage fades from Bloodlord Mandokir.",
 	enragebar = "Enrage",
@@ -120,7 +121,7 @@ L:RegisterTranslations("deDE", function() return {
 ---------------------------------
 
 -- module variables
-module.revision = 20006 -- To be overridden by the module!
+module.revision = 20007 -- To be overridden by the module!
 module.enabletrigger = module.translatedName -- string or table {boss, add1, add2}
 module.wipemobs = { L["ohgan"] } -- adds which will be considered in CheckForEngage
 module.toggleoptions = {"gaze", "announce", "puticon", "whirlwind", "enraged", "bosskill"}
@@ -229,6 +230,7 @@ function module:CHAT_MSG_MONSTER_YELL(msg)
 	if watchedplayer then
 		if self.db.profile.announce then
 			if watchedplayer == UnitName("player") then
+				self:SendSay(L["gaze_onme"] .. UnitName("player") .. "!")
 				self:Message(L["watched_warning"], "Personal", true, "Alarm")
 			else
 				self:Message(string.format(L["watched_warning_other"], watchedplayer), "Attention")

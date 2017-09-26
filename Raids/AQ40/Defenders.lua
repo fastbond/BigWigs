@@ -54,6 +54,7 @@ L:RegisterTranslations("enUS", function() return {
 	plagueyouwarn = "You have the plague!",
 	plagueyou = "You",
 	plagueare = "are",
+	plague_onme = "Plague on ",
 	thunderclaptrigger = "^Anubisath Defender's Thunderclap hits ([^%s]+) for %d+%.",
 	thunderclapwarn = "Thunderclap!",
 } end )
@@ -105,7 +106,7 @@ L:RegisterTranslations("deDE", function() return {
 ---------------------------------
 
 -- module variables
-module.revision = 20005 -- To be overridden by the module!
+module.revision = 20006 -- To be overridden by the module!
 module.enabletrigger = module.translatedName -- string or table {boss, add1, add2}
 --module.wipemobs = { L["add_name"] } -- adds which will be considered in CheckForEngage
 module.toggleoptions = {"plagueyou", "plagueother", "icon", -1, "thunderclap", "explode", "enrage"--[[, "bosskill"]]}
@@ -199,6 +200,7 @@ function module:CheckPlague(msg)
 	local _,_, pplayer, ptype = string.find(msg, L["plaguetrigger"])
 	if pplayer then
 		if self.db.profile.plagueyou and pplayer == L["plagueyou"] then
+			self:SendSay(L["plague_onme"] .. UnitName("player") .. "!")
 			self:Message(L["plagueyouwarn"], "Personal", true, "RunAway")
 			self:Message(UnitName("player") .. L["plaguewarn"], "Attention", nil, nil, true)
 			self:WarningSign(icon.plague, 5)

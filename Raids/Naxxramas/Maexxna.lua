@@ -61,7 +61,7 @@ L:RegisterTranslations("enUS", function() return {
 ---------------------------------
 
 -- module variables
-module.revision = 20011 -- To be overridden by the module!
+module.revision = 20012 -- To be overridden by the module!
 module.enabletrigger = module.translatedName -- string or table {boss, add1, add2}
 --module.wipemobs = { L["add_name"] } -- adds which will be considered in CheckForEngage
 module.toggleoptions = {"spray", "poison", "cocoon", "enrage", "bosskill"}
@@ -69,8 +69,7 @@ module.toggleoptions = {"spray", "poison", "cocoon", "enrage", "bosskill"}
 
 -- locals
 local timer = {
-	poison = {5, 10},
-	firstPoison = 15,
+	poison = {10, 22},
 	cocoon = 20,
 	spider = 30,
 	webspray = 40,
@@ -119,7 +118,7 @@ end
 -- called after boss is engaged
 function module:OnEngage()
 	self:KTM_SetTarget(self:ToString())
-	self:Bar(L["poisonbar"], timer.firstPoison, icon.poison)
+	self:IntervalBar(L["poisonbar"], timer.poison[1], timer.poison[2], icon.poison)
 	self:Webspray()
 end
 
@@ -155,12 +154,12 @@ end
 function module:UNIT_HEALTH( msg )
 	if UnitName(msg) == boss then
 		local health = UnitHealth(msg)
-		if (health > 30 and health <= 33 and not enrageannounced) then
+		if (health > 449685 and health <= 500000 and not enrageannounced) then
 			if self.db.profile.enrage then
 				self:Message(L["enragesoonwarn"], "Important")
 			end
 			enrageannounced = true
-		elseif (health > 40 and enrageannounced) then
+		elseif (health > 599580 and enrageannounced) then
 			enrageannounced = false
 		end
 	end
@@ -214,7 +213,7 @@ end
 function module:Poison()
 	if self.db.profile.poison then
 		self:Message(L["poisonwarn"], "Important")
-		self:IntervalBar(L["poisonbar"], timer.poison[1], timer.poison[2], icon.poison)
+		self:IntervalBar(L["poisonbar"], timer.poison[1], timer.poison[2], icon.poison, true, "Green")
 	end
 end
 

@@ -51,6 +51,8 @@ L:RegisterTranslations("enUS", function() return {
 
 	adddeath = "No... more... Feugen...",
 	adddeath2 = "Master save me...",
+	adddeath3 = "Stalagg dies.",
+	adddeath4 = "Feugen dies.",
 
 	teslaoverload = "overloads!",
 
@@ -101,7 +103,7 @@ L:RegisterTranslations("enUS", function() return {
 ---------------------------------
 
 -- module variables
-module.revision = 20003 -- To be overridden by the module!
+module.revision = 20004 -- To be overridden by the module!
 module.enabletrigger = {module.translatedName, feugen, stalagg} -- string or table {boss, add1, add2}
 --module.wipemobs = { L["add_name"] } -- adds which will be considered in CheckForEngage
 module.toggleoptions = {"enrage", "charge", "polarity", -1, "power", "throw", "phase", "bosskill"}
@@ -112,9 +114,9 @@ local timer = {
 	throw = 20.5,
 	powerSurge = 10,
 	enrage = 300,
-	polarityTick = 6,
+	polarityTick = 5,
 	firstPolarity = 10,
-	polarityShift = 30,
+	polarityShift = {25,35},
 	transition = 14,
 	transition2 = 4,
 }
@@ -126,12 +128,13 @@ local icon = {
 }
 local syncName = {
 	powerSurge = "StalaggPower"..module.revision,
-	--phase2 = "ThaddiusPhaseTwo"..module.revision,
+	phase2 = "ThaddiusPhaseTwo"..module.revision,
 	addsdead = "ThaddiusAdsDead"..module.revision,
 	polarity = "ThaddiusPolarity"..module.revision,
 	enrage = "ThaddiusEnrage"..module.revision,
 }
-
+local phase2started = nil
+local addsdead2 = 0
 
 ------------------------------
 --      Initialization      --
@@ -150,10 +153,14 @@ function module:OnEnable()
 
 	self:ThrottleSync(10, syncName.polarity)
 	self:ThrottleSync(4, syncName.powerSurge)
+	self:ThrottleSync(20, syncName.phase2)
+	self:ThrottleSync(20, syncName.addsdead)
 end
 
 -- called after module is enabled and after each wipe
 function module:OnSetup()
+	phase2started = nil
+	addsdead2 = 0
 	self.started = nil
 	self.enrageStarted = nil
 	self.addsdead = 0
@@ -205,14 +212,19 @@ function module:CHAT_MSG_MONSTER_YELL( msg )
 		if self.addsdead == 2 then
 			self:Sync(syncName.addsdead)
 		end
-		--elseif string.find(msg, L["trigger_phase2_1"]) or string.find(msg, L["trigger_phase2_2"]) or string.find(msg, L["trigger_phase2_3"]) then
-		--	self:Sync(syncName.phase2)
+	elseif string.find(msg, L["trigger_phase2_1"]) or string.find(msg, L["trigger_phase2_2"]) or string.find(msg, L["trigger_phase2_3"]) then
+		self:Sync(syncName.phase2)
 	end
 end
 
 function module:CheckForEnrage(msg)
 	if msg == L["enragetrigger"] then
 		self:Sync(syncName.enrage)
+	elseif string.find(msg, L["adddeath3"]) or string.find(msg, L["adddeath4"]) then
+		addsdead2 = addsdead2 + 1
+		if addsdead2 == 2 then
+			self:Sync(syncName.addsdead)
+		end
 	elseif string.find(msg, L["teslaoverload"]) then
 		self:Transition(timer.transition2)
 	end
@@ -277,8 +289,8 @@ function module:BigWigs_RecvSync(sync, rest, nick)
 		self:PowerSurge()
 	elseif sync == syncName.addsdead then
 		self:Transition(timer.transition)
-		--elseif sync == syncName.phase2 then
-		--	self:Phase2()
+	elseif sync == syncName.phase2 then
+		self:Phase2()
 	elseif sync == syncName.polarity then
 		self:PolarityShift()
 	elseif sync == syncName.enrage then
@@ -315,6 +327,8 @@ function module:Transition(transitionTime)
 end
 
 function module:Phase2()
+	if phase2started then return end
+	phase2started = true
 	self:KTM_Reset()
 	if self.db.profile.phase then
 		self:Message(L["startwarn2"], "Important")
@@ -333,8 +347,8 @@ end
 function module:PolarityShift()
 	if self.db.profile.polarity then
 		self:RegisterEvent("PLAYER_AURAS_CHANGED")
-		self:DelayedMessage(timer.polarityShift - 3, L["pswarn3"], "Important", nil, "Beware")
-		self:Bar(L["bar1text"], timer.polarityShift, icon.polarityShift)
+		self:DelayedMessage(timer.polarityShift[1], L["pswarn3"], "Important", nil, "Beware")
+		self:IntervalBar(L["bar1text"], timer.polarityShift[1], timer.polarityShift[2], icon.polarityShift)
 	end
 end
 
@@ -367,16 +381,16 @@ function module:CheckAddHP()
 	local health1
 	local health2
 	if UnitName("playertarget") == L["add1"] then
-		health1 = UnitHealth("playertarget")
+		health1 = math.ceil((UnitHealth("playertarget") / UnitHealthMax("playertarget")) * 100)
 	elseif UnitName("playertarget") == L["add2"] then
-		health2 = UnitHealth("playertarget")
+		health2 = math.ceil((UnitHealth("playertarget") / UnitHealthMax("playertarget")) * 100)
 	end
 
 	for i = 1, GetNumRaidMembers(), 1 do
 		if UnitName("Raid"..i.."target") == L["add1"] then
-			health1 = UnitHealth("Raid"..i.."target")
+			health1 = math.ceil((UnitHealth("Raid"..i.."target") / UnitHealthMax("Raid"..i.."target")) * 100)
 		elseif UnitName("Raid"..i.."target") == L["add2"] then
-			health2 = UnitHealth("Raid"..i.."target")
+			health2 = math.ceil((UnitHealth("Raid"..i.."target") / UnitHealthMax("Raid"..i.."target")) * 100)
 		end
 		if health1 and health2 then break; end
 	end

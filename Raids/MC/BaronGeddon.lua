@@ -5,7 +5,7 @@
 
 local module, L = BigWigs:ModuleDeclaration("Baron Geddon", "Molten Core")
 
-module.revision = 20005 -- To be overridden by the module!
+module.revision = 20006 -- To be overridden by the module!
 module.enabletrigger = module.translatedName -- string or table {boss, add1, add2}
 module.wipemobs = nil
 module.toggleoptions = {"inferno", "service", "bomb", "mana", "announce", "icon", "bosskill"}
@@ -64,6 +64,7 @@ L:RegisterTranslations("enUS", function() return {
 	bomb_message_you = "You are the bomb!",
 	bomb_message_youscreen = "You are the bomb!",
 	bomb_message_other = "%s is the bomb!",
+	bomb_onme = "Living Bomb on ",
 
 	bomb_bar = "Living Bomb: %s",
 	bomb_bar1 = "Living Bomb: %s",
@@ -230,6 +231,7 @@ function module:Event(msg)
 			self:Bar(string.format(L["bomb_bar1"], UnitName("player")), timer.bomb, icon.bomb)
 			self:Message(L["bomb_message_youscreen"], "Attention", "RunAway")
 			self:WarningSign("Spell_Shadow_MindBomb", timer.bomb)
+			self:SendSay(L["bomb_onme"] .. UnitName("player") .. "!")
 		end
 		if self.db.profile.icon then
 			self:Icon(UnitName("player"))

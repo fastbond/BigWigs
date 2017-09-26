@@ -28,6 +28,10 @@ L:RegisterTranslations("enUS", function() return {
 	erruption_cmd = "erruption",
 	erruption_name = "Erruption Alert",
 	erruption_desc = "Warn for Erruption",
+	
+	manaburn_cmd = "manaburn",
+	manaburn_name = "Mana Burn Alert",
+	manaburn_desc = "Warn for Mana Burn",
 
 	-- [[ Triggers ]]--
 	starttrigger = "You are mine now!",
@@ -54,8 +58,9 @@ L:RegisterTranslations("enUS", function() return {
 	toPlatform_bar = "Teleport!",
 	toFloor_bar = "Back on the floor!",
 	dbar = "Decrepit Fever",
-	erruptionbar = "Erruption",
+	erruptionbar = "Eruption",
 	dancingshoes = "Put on your dancing shoes!",
+	manaburn_bar = "Mana Burn",
 
 	-- [[ Dream Room Mobs ]] --
 	["Eye Stalk"] = true,
@@ -68,25 +73,27 @@ L:RegisterTranslations("enUS", function() return {
 ---------------------------------
 
 -- module variables
-module.revision = 20011 -- To be overridden by the module!
+module.revision = 20012 -- To be overridden by the module!
 module.enabletrigger = module.translatedName -- string or table {boss, add1, add2}
-module.wipemobs = { L["Eye Stalk"], L["Rotting Maggot"] } -- adds which will be considered in CheckForEngage
-module.toggleoptions = {"engage", "teleport", "disease", "erruption", "bosskill"}
+--module.wipemobs = { L["Eye Stalk"], L["Rotting Maggot"] } -- adds which will be considered in CheckForEngage
+module.toggleoptions = {"engage", "teleport", "disease", "erruption", "manaburn", "bosskill"}
 
 
 -- locals
 local timer = {
-	firstDisease = 30,
-	firstDiseaseAfterDance = 5,
-	disease = {20,25},
+	firstDisease = 10,
+	firstDiseaseAfterDance = 10,
+	disease = 25,
 	toFloor = 45,
 	toPlatform = 90, --dance
 	firstErruption = 15,
-	firstDanceErruption = 4,
+	firstErruptionAfterDance = 11,
+	firstDanceErruption = 3,
 	erruption = 0, -- will be changed during the encounter
 	erruptionSlow = 10,
 	erruptionFast = 3,
-	dancing = 10,
+	firstManaburn = 15,
+	firstManaburnAfterDance = 5,
 }
 local icon = {
 	disease = "Ability_Creature_Disease_03",
@@ -94,6 +101,7 @@ local icon = {
 	toPlatform = "Spell_Arcane_Blink",
 	erruption = "spell_fire_selfdestruct",
 	dancing = "INV_Gizmo_RocketBoot_01",
+	manaburn = "Spell_Frost_ManaBurn",
 }
 local syncName = {
 	toPlatform = "HeiganToPlatform"..module.revision,
@@ -136,6 +144,9 @@ function module:OnEngage()
 	end
 	if self.db.profile.disease then
 		self:Bar(L["dbar"], timer.firstDisease, icon.disease)
+	end
+	if self.db.profile.manaburn then
+		self:Bar(L["manaburn_bar"], timer.firstManaburn, icon.manaburn)
 	end
 	if self.db.profile.erruption then
 		timer.erruption = timer.erruptionSlow
@@ -181,12 +192,12 @@ function module:Erruption()
 		local registered, time, elapsed = self:BarStatus(L["toPlatform_bar"])
 		if registered and timer and elapsed then
 			local remaining = time - elapsed
-			if timer.erruption + 1 < remaining then
+			if timer.erruption <= remaining then
 				self:Bar(L["erruptionbar"], timer.erruption, icon.erruption)
 				self:ScheduleEvent("HeiganErruption", self.Erruption, timer.erruption, self)
 			else
 				self:Sound("Beware")
-				self:Bar(L["dancingshoes"], timer.dancing, icon.dancing)
+				self:Bar(L["dancingshoes"], remaining, icon.dancing)
 			end
 		else
 			self:Bar(L["erruptionbar"], timer.erruption, icon.erruption)
@@ -222,8 +233,8 @@ function module:Disease()
 		local registered, time, elapsed = self:BarStatus(L["toPlatform_bar"])
 		if time and elapsed then
 			local remaining = time - elapsed
-			if timer.disease[1] < remaining then
-				self:IntervalBar(L["dbar"], timer.disease[1], timer.disease[2], icon.disease)
+			if timer.disease <= remaining then
+				self:Bar(L["dbar"], timer.disease, icon.disease)
 			end
 		end
 	end
@@ -246,7 +257,8 @@ end
 
 function module:ToFloor()
 	self:CancelScheduledEvent("bwHeiganToFloor")
-	self:KTM_Reset()
+	--Threat wasn't reset
+	--self:KTM_Reset()
 	if self.db.profile.teleport then
 		self:Message(L["on_floor_message"], "Attention")
 		self:Bar(L["toPlatform_bar"], timer.toPlatform, icon.toPlatform)
@@ -254,12 +266,15 @@ function module:ToFloor()
 	if self.db.profile.disease then
 		self:Bar(L["dbar"], timer.firstDiseaseAfterDance, icon.disease)
 	end
+	if self.db.profile.manaburn then
+		self:Bar(L["manaburn_bar"], timer.firstManaburnAfterDance, icon.manaburn)
+	end
 	if self.db.profile.erruption then
 		self:CancelScheduledEvent("HeiganErruption")
 
 		timer.erruption = timer.erruptionSlow
-		self:Bar(L["erruptionbar"], timer.erruption, icon.erruption)
-		self:ScheduleEvent("HeiganErruption", self.Erruption, timer.erruption, self)
+		self:Bar(L["erruptionbar"], timer.firstErruptionAfterDance, icon.erruption)
+		self:ScheduleEvent("HeiganErruption", self.Erruption, timer.firstErruptionAfterDance, self)
 	end
 end
 
@@ -300,17 +315,17 @@ function module:Test()
 	self:ScheduleEvent(self:ToString().."Test_fever", fever, time, self)
 
 	-- fever after 30s
-	time = time + timer.disease[1]
+	time = time + timer.disease
 	BigWigs:Print(" fever after " .. time)
 	self:ScheduleEvent(self:ToString().."Test_fever2", fever, time, self)
 
 	-- fever after 51s
-	time = time + timer.disease[1]
+	time = time + timer.disease
 	BigWigs:Print(" fever after " .. time)
 	self:ScheduleEvent(self:ToString().."Test_fever3", fever, time, self)
 
 	-- fever after 72s
-	time = time + timer.disease[1]
+	time = time + timer.disease
 	BigWigs:Print(" fever after " .. time)
 	self:ScheduleEvent(self:ToString().."Test_fever4", fever, time, self)
 

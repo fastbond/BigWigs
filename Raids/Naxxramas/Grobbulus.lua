@@ -34,6 +34,7 @@ L:RegisterTranslations("enUS", function() return {
 	cloud_desc = "Warn for Poison Clouds",
 
 	inject_trigger = "^([^%s]+) ([^%s]+) afflicted by Mutating Injection",
+	inject_fade = "Mutating Injection fades from you",
 
 	you = "You",
 	are = "are",
@@ -48,6 +49,7 @@ L:RegisterTranslations("enUS", function() return {
 	bomb_message_you = "You are injected!",
 	bomb_message_other = "%s is injected!",
 	bomb_bar = "%s injected",
+	bomb_onme = "Injection on ",
 
 	cloud_trigger = "Grobbulus casts Poison Cloud.",
 	cloud_warn = "Poison Cloud next in ~15 seconds!",
@@ -68,7 +70,7 @@ L:RegisterTranslations("enUS", function() return {
 ---------------------------------
 
 -- module variables
-module.revision = 20003 -- To be overridden by the module!
+module.revision = 20004 -- To be overridden by the module!
 module.enabletrigger = module.translatedName -- string or table {boss, add1, add2}
 --module.wipemobs = { L["add_name"] } -- adds which will be considered in CheckForEngage
 module.toggleoptions = {"youinjected", "otherinjected", "slimespray",  "icon", "cloud", -1, "enrage", "bosskill"}
@@ -84,7 +86,7 @@ local timer = {
 	inject = 10,
 	cloud = 15,
 	firstSlimeSpray = {20, 30},
-	slimeSpray = {30, 35},
+	slimeSpray = {30, 40},
 }
 local icon = {
 	enrage = "INV_Shield_01",
@@ -110,6 +112,7 @@ function module:OnEnable()
 	self:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_SELF_DAMAGE", "InjectEvent")
 	self:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_FRIENDLYPLAYER_DAMAGE", "InjectEvent")
 	self:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_PARTY_DAMAGE", "InjectEvent")
+	self:RegisterEvent("CHAT_MSG_SPELL_AURA_GONE_SELF")
 
 	self:RegisterEvent("CHAT_MSG_SPELL_CREATURE_VS_SELF_DAMAGE", "CheckSpray")
 	self:RegisterEvent("CHAT_MSG_SPELL_CREATURE_VS_PARTY_DAMAGE", "CheckSpray")
@@ -194,6 +197,11 @@ end
 ------------------------------
 --      Sync Handlers	    --
 ------------------------------
+function module:CHAT_MSG_SPELL_AURA_GONE_SELF(msg)
+	if string.find(msg, L["inject_fade"]) then
+		self:RemoveWarningSign(icon.inject)
+	end
+end
 
 function module:Inject(player)
 	if player then
@@ -203,9 +211,10 @@ function module:Inject(player)
 
 			self:Message(string.format(L["bomb_message_other"], player), "Attention", nil, nil, true)
 			self:Bar(string.format(L["bomb_bar"], player), timer.inject, icon.inject)
+			self:SendSay(L["bomb_onme"] .. UnitName("player") .. "!")
 		elseif self.db.profile.otherinjected then
 			self:Message(string.format(L["bomb_message_other"], player), "Attention")
-			--self:TriggerEvent("BigWigs_SendTell", player, L["bomb_message_you"]) -- can cause whisper bug on nefarian
+			self:TriggerEvent("BigWigs_SendTell", player, L["bomb_message_you"])
 			self:Bar(string.format(L["bomb_bar"], player), timer.inject, icon.inject)
 		end
 		if self.db.profile.icon then

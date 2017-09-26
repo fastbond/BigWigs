@@ -90,7 +90,7 @@ L:RegisterTranslations("frFR", function() return {
 ----------------------------------
 
 BigWigsCustomBar = BigWigs:NewModule(L["Custom Bars"])
-BigWigsCustomBar.revision = tonumber(string.sub("$Revision: 15073 $", 12, -3))
+BigWigsCustomBar.revision = 20001
 BigWigsCustomBar.external = true
 BigWigsCustomBar.consoleCmd = L["custombar"]
 BigWigsCustomBar.consoleOptions = {
@@ -139,6 +139,10 @@ end
 function BigWigsCustomBar:BigWigs_RecvSync(sync, rest, nick)
 	if sync ~= "BWCustomBar" or not rest or not nick or not self.enabled then return end
 
+	if string.find(rest, "bwPullTimer") then
+		return
+	end
+	
 	if UnitInRaid("player") then
 		for i = 1, GetNumRaidMembers() do
 			local name, rank = GetRaidRosterInfo(i)

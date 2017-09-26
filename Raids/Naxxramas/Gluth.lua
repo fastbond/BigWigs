@@ -32,6 +32,7 @@ L:RegisterTranslations("enUS", function() return {
 	frenzy_trigger = "%s goes into a frenzy!",
 	berserk_trigger = "gains Berserk",
 	fear_trigger = "by Terrifying Roar.",
+	fear2_trigger = "Terrifying Roar fails",
 	starttrigger = "devours all nearby zombies!",
 
 	frenzy_warn = "Frenzy Alert!",
@@ -71,7 +72,7 @@ L:RegisterTranslations("enUS", function() return {
 ---------------------------------
 
 -- module variables
-module.revision = 20007 -- To be overridden by the module!
+module.revision = 20008 -- To be overridden by the module!
 module.enabletrigger = module.translatedName -- string or table {boss, add1, add2}
 --module.wipemobs = { L["add_name"] } -- adds which will be considered in CheckForEngage
 module.toggleoptions = {"frenzy", "fear", "decimate", "enrage", "bosskill", "zombies"}
@@ -80,11 +81,13 @@ module.toggleoptions = {"frenzy", "fear", "decimate", "enrage", "bosskill", "zom
 -- locals
 local timer = {
 	decimateInterval = 105,
-	zombie = 6,
+	zombie = 9,
 	enrage = 330,
 	fear = 20,
 	frenzy = 10,
-	firstFrenzy = 10,
+	firstFrenzy = 15,
+	frenzyLonger = 20,	--on Kronos the frenzy which would line up with the first decimate is
+						--skipped thus we need longer timer for that frenzy (after 9th frenzy)
 }
 local icon = {
 	zombie = "Ability_Seal",
@@ -101,6 +104,7 @@ local syncName = {
 
 local lastFrenzy = 0
 local _, playerClass = UnitClass("player")
+local frenzyCount = 0
 
 ------------------------------
 --      Initialization      --
@@ -129,6 +133,7 @@ function module:OnSetup()
 	self.prior = nil
 	self.zomnum = 1
 	lastFrenzy = 0
+	frenzyCount = 0
 end
 
 -- called after boss is engaged
@@ -191,7 +196,7 @@ function module:Frenzy( msg )
 end
 
 function module:Fear( msg )
-	if self.db.profile.fear and not self.prior and string.find(msg, L["fear_trigger"]) then
+	if self.db.profile.fear and not self.prior and (string.find(msg, L["fear_trigger"]) or string.find(msg, L["fear2_trigger"])) then
 		self:Message(L["fear_warn"], "Important")
 		self:Bar(L["bar1text"], timer.fear, icon.fear)
 		self:DelayedMessage(timer.fear - 5, L["fear_warn_5"], "Urgent")
@@ -236,6 +241,7 @@ end
 
 function module:BigWigs_RecvSync(sync, rest, nick)
 	if sync == syncName.frenzy and self.db.profile.frenzy then
+		frenzyCount = frenzyCount + 1
 		self:Message(L["frenzy_message"], "Important", nil, true, "Alert")
 		self:Bar(L["frenzy_bar"], timer.frenzy, icon.frenzy, true, "red")
 		if playerClass == "HUNTER" then
@@ -246,8 +252,13 @@ function module:BigWigs_RecvSync(sync, rest, nick)
 		self:RemoveBar(L["frenzy_bar"])
 		self:RemoveWarningSign(icon.tranquil, true)
 		if lastFrenzy ~= 0 then
-			local NextTime = (lastFrenzy + timer.frenzy) - GetTime()
-			self:Bar(L["frenzy_Nextbar"], NextTime, icon.frenzy, true, "white")
+			if frenzyCount == 9 then
+				local NextTime = (lastFrenzy + timer.frenzyLonger) - GetTime()
+				self:Bar(L["frenzy_Nextbar"], NextTime, icon.frenzy, true, "white")
+			else
+				local NextTime = (lastFrenzy + timer.frenzy) - GetTime()
+				self:Bar(L["frenzy_Nextbar"], NextTime, icon.frenzy, true, "white")
+			end
 		end
 	end
 end

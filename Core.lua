@@ -168,7 +168,7 @@ BigWigs.cmdtable = {type = "group", handler = BigWigs, args = {
 }}
 BigWigs:RegisterChatCommand({"/bw", "/BigWigs"}, BigWigs.cmdtable)
 BigWigs.debugFrame = ChatFrame1
-BigWigs.revision = 20021
+BigWigs.revision = 20022
 
 
 function BigWigs:DebugMessage(msg, module)
@@ -622,6 +622,11 @@ end
 
 function BigWigs.modulePrototype:Say(msg)
 	SendChatMessage(msg, "SAY")
+end
+
+-- SendSay in RaidWarn plugin. Can be toggled on/off.
+function BigWigs.modulePrototype:SendSay(msg)
+	self:TriggerEvent("BigWigs_SendSay", msg)
 end
 
 -- proximity

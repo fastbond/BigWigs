@@ -237,7 +237,7 @@ end
 function BigWigsVersionQuery:UpdateVersions()
 	for name, version in pairs(self.responseTable) do
 		if not self.zoneRevisions then return end
-		if version > 20000 and version < 30000 then
+		if version > 20000 and version < 20700 then
 			if self.zoneRevisions[self.currentZone] and version > self.zoneRevisions[self.currentZone] then
 				self:IsOutOfDate()
 			end

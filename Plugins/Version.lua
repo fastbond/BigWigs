@@ -333,7 +333,7 @@ function BigWigsVersionQuery:OnTooltipUpdate()
 			local color = COLOR_WHITE
 			if self.zoneRevisions[self.currentZone] and version > self.zoneRevisions[self.currentZone] then
 				color = COLOR_RED
-				if version > 20000 and version < 30000 then
+				if version > 20000 and version < 20700 then
 					self:IsOutOfDate()
 					color = COLOR_GREEN
 				end

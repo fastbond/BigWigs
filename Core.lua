@@ -650,7 +650,9 @@ end
 
 -- KLHThreatMeter
 function BigWigs.modulePrototype:KTM_Reset()
-	BigWigsKtm:KTM_Reset()
+	if IsRaidLeader() or IsRaidOfficer() then
+		BigWigsKtm:KTM_Reset()
+	end
 end
 function BigWigs.modulePrototype:KTM_ClearTarget(forceReset)
 	BigWigs:KTM_ClearTarget(forceReset)

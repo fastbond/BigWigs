@@ -168,7 +168,7 @@ BigWigs.cmdtable = {type = "group", handler = BigWigs, args = {
 }}
 BigWigs:RegisterChatCommand({"/bw", "/BigWigs"}, BigWigs.cmdtable)
 BigWigs.debugFrame = ChatFrame1
-BigWigs.revision = 20025
+BigWigs.revision = 20026
 
 
 function BigWigs:DebugMessage(msg, module)
@@ -600,10 +600,10 @@ function BigWigs.modulePrototype:CancelDelayedSound(sound, id)
 end
 
 function BigWigs.modulePrototype:Icon(name, iconnumber)
-	self:TriggerEvent("BigWigs_SetRaidIcon", name, iconnumber)
+	--self:TriggerEvent("BigWigs_SetRaidIcon", name, iconnumber)
 end
 function BigWigs.modulePrototype:RemoveIcon()
-	self:TriggerEvent("BigWigs_RemoveRaidIcon")
+	--self:TriggerEvent("BigWigs_RemoveRaidIcon")
 end
 
 function BigWigs.modulePrototype:WarningSign(icon, duration, force)

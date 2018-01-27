@@ -32,6 +32,11 @@ L:RegisterTranslations("enUS", function() return {
 	BOSS_DOWN		= "%s down after %s!",
 	BOSS_DOWN_L		= "%s down after %s! Your last kill took %s and your fastest kill took %s. You have %d total victories.",
 	BOSS_DOWN_NR	= "%s down after %s! This is a new record! (Old record was %s). You have %d total victories.",
+	["BossRecords"] = true,
+	["Options for BossRecords"] = true,
+	["Enable"] = true,
+	["Display a message in chat window when a boss is engaged and disengaged, and how long it took to kill the boss."] = true,
+	["bwbr"] = true,
 } end)
 
 ----------------------------------
@@ -39,7 +44,26 @@ L:RegisterTranslations("enUS", function() return {
 ----------------------------------
 
 BigWigsBossRecords = BigWigs:NewModule("BossRecords")
-
+BigWigsBossRecords.revision = 20001
+BigWigsBossRecords.defaultDB = {
+	enable = true,
+}
+BigWigsBossRecords.consoleCmd = L["bwbr"]
+BigWigsBossRecords.consoleOptions = {
+	type = "group",
+	name = L["BossRecords"],
+	desc = L["Options for BossRecords"],
+	args = {
+		enable = {
+			type = "toggle",
+			name = L["Enable"],
+			desc = L["Display a message in chat window when a boss is engaged and disengaged, and how long it took to kill the boss."],
+			order = 1,
+			get = function() return BigWigsBossRecords.db.profile.enable end,
+			set = function(v) BigWigsBossRecords.db.profile.enable = v end,
+		},
+	}
+}
 ------------------------------
 --      Initialization      --
 ------------------------------
@@ -57,32 +81,39 @@ function BigWigsBossRecords:StartBossfight(module)
 	if module and module.bossSync then
 		c.name      = module:ToString()
 		c.startTime = GetTime()
-
-		DEFAULT_CHAT_FRAME:AddMessage(prefix .. string.format(L["BOSS_ENGAGED"], c.name))
+		if BigWigsBossRecords.db.profile.enable then
+			DEFAULT_CHAT_FRAME:AddMessage(prefix .. string.format(L["BOSS_ENGAGED"], c.name))
+		end
 	end
 end
 
 function BigWigsBossRecords:EndBossfight(module)
-	if c.name == module:ToString() then
+	if BigWigsBossRecords.db.profile.enable and c.name == module:ToString() then
 		local timeSpent = GetTime() - c.startTime
 		c.lastKill      = GetTime()
 
 		if self.db.profile[c.name] then
 			if self.db.profile[c.name][2] > timeSpent then
 				-- It's a new record!
-				DEFAULT_CHAT_FRAME:AddMessage(prefix .. string.format(L["BOSS_DOWN_NR"], c.name, self:FormatTime(timeSpent), self:FormatTime(self.db.profile[c.name][2]), self.db.profile[c.name][1] + 1))
+				if BigWigsBossRecords.db.profile.enable then
+					DEFAULT_CHAT_FRAME:AddMessage(prefix .. string.format(L["BOSS_DOWN_NR"], c.name, self:FormatTime(timeSpent), self:FormatTime(self.db.profile[c.name][2]), self.db.profile[c.name][1] + 1))
+				end
 				self.db.profile[c.name][1] = self.db.profile[c.name][1] + 1;
 				self.db.profile[c.name][2] = timeSpent
 				self.db.profile[c.name][3] = timeSpent
 			else
 				-- We found data but it's not a new record
-				DEFAULT_CHAT_FRAME:AddMessage(prefix .. string.format(L["BOSS_DOWN_L"], c.name, self:FormatTime(timeSpent), self:FormatTime(self.db.profile[c.name][3]), self:FormatTime(self.db.profile[c.name][2]), self.db.profile[c.name][1] + 1))
+				if BigWigsBossRecords.db.profile.enable then
+					DEFAULT_CHAT_FRAME:AddMessage(prefix .. string.format(L["BOSS_DOWN_L"], c.name, self:FormatTime(timeSpent), self:FormatTime(self.db.profile[c.name][3]), self:FormatTime(self.db.profile[c.name][2]), self.db.profile[c.name][1] + 1))
+				end
 				self.db.profile[c.name][1] = self.db.profile[c.name][1] + 1;
 				self.db.profile[c.name][3] = timeSpent
 			end
 		else
 			-- It's our first kill
-			DEFAULT_CHAT_FRAME:AddMessage(prefix .. string.format(L["BOSS_DOWN"], c.name, self:FormatTime(timeSpent)))
+			if BigWigsBossRecords.db.profile.enable then
+				DEFAULT_CHAT_FRAME:AddMessage(prefix .. string.format(L["BOSS_DOWN"], c.name, self:FormatTime(timeSpent)))
+			end
 			self.db.profile[c.name] = {1, timeSpent, timeSpent}
 		end
 	end

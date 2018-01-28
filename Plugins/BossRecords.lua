@@ -81,21 +81,21 @@ function BigWigsBossRecords:StartBossfight(module)
 	if module and module.bossSync then
 		c.name      = module:ToString()
 		c.startTime = GetTime()
-		if BigWigsBossRecords.db.profile.enable then
+		if self.db.profile.enable then
 			DEFAULT_CHAT_FRAME:AddMessage(prefix .. string.format(L["BOSS_ENGAGED"], c.name))
 		end
 	end
 end
 
 function BigWigsBossRecords:EndBossfight(module)
-	if BigWigsBossRecords.db.profile.enable and c.name == module:ToString() then
+	if c.name == module:ToString() then
 		local timeSpent = GetTime() - c.startTime
 		c.lastKill      = GetTime()
 
 		if self.db.profile[c.name] then
 			if self.db.profile[c.name][2] > timeSpent then
 				-- It's a new record!
-				if BigWigsBossRecords.db.profile.enable then
+				if self.db.profile.enable then
 					DEFAULT_CHAT_FRAME:AddMessage(prefix .. string.format(L["BOSS_DOWN_NR"], c.name, self:FormatTime(timeSpent), self:FormatTime(self.db.profile[c.name][2]), self.db.profile[c.name][1] + 1))
 				end
 				self.db.profile[c.name][1] = self.db.profile[c.name][1] + 1;
@@ -103,7 +103,7 @@ function BigWigsBossRecords:EndBossfight(module)
 				self.db.profile[c.name][3] = timeSpent
 			else
 				-- We found data but it's not a new record
-				if BigWigsBossRecords.db.profile.enable then
+				if self.db.profile.enable then
 					DEFAULT_CHAT_FRAME:AddMessage(prefix .. string.format(L["BOSS_DOWN_L"], c.name, self:FormatTime(timeSpent), self:FormatTime(self.db.profile[c.name][3]), self:FormatTime(self.db.profile[c.name][2]), self.db.profile[c.name][1] + 1))
 				end
 				self.db.profile[c.name][1] = self.db.profile[c.name][1] + 1;
@@ -111,7 +111,7 @@ function BigWigsBossRecords:EndBossfight(module)
 			end
 		else
 			-- It's our first kill
-			if BigWigsBossRecords.db.profile.enable then
+			if self.db.profile.enable then
 				DEFAULT_CHAT_FRAME:AddMessage(prefix .. string.format(L["BOSS_DOWN"], c.name, self:FormatTime(timeSpent)))
 			end
 			self.db.profile[c.name] = {1, timeSpent, timeSpent}

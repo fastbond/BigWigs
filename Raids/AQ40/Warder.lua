@@ -72,6 +72,7 @@ module.revision = 20002 -- To be overridden by the module!
 module.enabletrigger = module.translatedName -- string or table {boss, add1, add2}
 --module.wipemobs = { L["add_name"] } -- adds which will be considered in CheckForEngage
 module.toggleoptions = {"fear", "silence", "roots", "dust", "warnings"--[[, "bosskill"]]}
+module.trashMod = true
 
 -- locals
 local timer = {

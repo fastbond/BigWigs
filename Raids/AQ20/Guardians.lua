@@ -103,6 +103,7 @@ L:RegisterTranslations("deDE", function() return {
 module.revision = 20009 -- To be overridden by the module!
 module.enabletrigger = module.translatedName -- string or table {boss, add1, add2}
 module.toggleoptions = {"summon", "meteor", "explode", "enrage", -1, "plagueyou", "plagueother", "icon"--[[, "bosskill"]]}
+module.trashMod = true
 
 module.defaultDB = {
 	bosskill = false,

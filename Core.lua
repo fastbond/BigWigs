@@ -168,7 +168,7 @@ BigWigs.cmdtable = {type = "group", handler = BigWigs, args = {
 }}
 BigWigs:RegisterChatCommand({"/bw", "/BigWigs"}, BigWigs.cmdtable)
 BigWigs.debugFrame = ChatFrame1
-BigWigs.revision = 20027
+BigWigs.revision = 20028
 
 
 function BigWigs:DebugMessage(msg, module)
@@ -223,6 +223,7 @@ BigWigs.modulePrototype.wipemobs = nil -- adds that will be considered in CheckF
 BigWigs.modulePrototype.toggleoptions = nil -- {"sweep", "sandblast", "scarab", -1, "emerge", "submerge", -1, "berserk", "bosskill"}
 BigWigs.modulePrototype.proximityCheck = nil -- function(unit) return CheckInteractDistance(unit, 2) end
 BigWigs.modulePrototype.proximitySilent = nil -- false
+BigWigs.modulePrototype.trashMod = nil --change to true for trash/special boss mods
 
 -- do not override
 function BigWigs.modulePrototype:IsBossModule()
@@ -271,7 +272,7 @@ function BigWigs.modulePrototype:Engage()
 		BigWigsPulltimer:BigWigs_StopPulltimer()
 		self.engaged = true
 		self:Message(string.format(L["%s engaged!"], self.translatedName), "Positive")
-		if BigWigs:HasModule("BossRecords") then
+		if BigWigs:HasModule("BossRecords") and not self.trashMod then
 			BigWigsBossRecords:StartBossfight(self)
 		end
 		self:OnEngage()
@@ -301,7 +302,7 @@ function BigWigs.modulePrototype:Victory()
 		if self.db.profile.bosskill then
 			self:Message(string.format(L["%s has been defeated"], self.translatedName), "Bosskill", nil, "Victory")
 		end
-		if BigWigs:HasModule("BossRecords") then
+		if BigWigs:HasModule("BossRecords") and not self.trashMod then
 			BigWigsBossRecords:EndBossfight(self)
 		end
 		self:DebugMessage("Boss dead, disabling module ["..self:ToString().."].")

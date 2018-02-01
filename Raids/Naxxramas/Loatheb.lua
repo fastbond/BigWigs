@@ -314,9 +314,9 @@ function module:CheckDebuff()
 			if ( buffName and strfind(strlower(buffName), debuff )) then
 				local timeleft = GetPlayerBuffTimeLeft(id)
 				if timeleft < timer.getNextSpore then
-					self:TriggerEvent("BigWigs_ShowWarningSign", icon.spore, timer.getNextSpore)
+					self:WarningSign(icon.spore, timer.getNextSpore)
 				elseif timeleft > timer.getNextSpore then
-					self:TriggerEvent("BigWigs_HideWarningSign", icon.spore)
+					self:RemoveWarningSign(icon.spore)
 				end
 			elseif ( buffName==nil ) then
 				break;

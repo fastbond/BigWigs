@@ -371,6 +371,8 @@ BabbleBoss:RegisterTranslations("enUS", function()
     ["Stoneskin Gargoyle"] = true,
 		["Living Monstrosity"] = true,
 		["Death Talon Wyrmguard"] = true,
+		["Necro Stalker"] = true,
+		["Venom Stalker"] = true,
 	}
 end)
 
@@ -714,6 +716,8 @@ BabbleBoss:RegisterTranslations("ruRU", function()
 		["Gurubashi Berserker"] = true;
                 ["Elder Mottled Boar"] = true,
                 ["Stoneskin Gargoyle"] = true,
+		["Necro Stalker"] = true,
+		["Venom Stalker"] = true,
 	}
 end)
 
@@ -940,6 +944,8 @@ BabbleBoss:RegisterTranslations("deDE", function()
 		["Gurubashi Berserker"] = true;
                 ["Stoneskin Gargoyle"] = "Steinhautgargoyle",
                 ["Elder Mottled Boar"] = "Alter scheckiger Eber",
+		["Necro Stalker"] = true,
+		["Venom Stalker"] = true,
 	}
 end)
 
@@ -1152,6 +1158,8 @@ BabbleBoss:RegisterTranslations("frFR", function()
 		["Wolf Master Nandos"] = "Ma\195\174tre-loup Nandos",
 		["Kurinnaxx"] = "Kurinnaxx",
 		["Stoneskin Gargoyle"] = true,
+		["Necro Stalker"] = true,
+		["Venom Stalker"] = true,
 	}
 end)
 
@@ -1367,6 +1375,8 @@ BabbleBoss:RegisterTranslations("zhCN", function()
 		["Rend Blackhand"] = "雷德·黑手",
 		["Kurinnaxx"] = "库林纳克斯",
                 ["Stoneskin Gargoyle"] = true,
+		["Necro Stalker"] = true,
+		["Venom Stalker"] = true,
 	}
 end)
 
@@ -1582,11 +1592,15 @@ BabbleBoss:RegisterTranslations("zhTW", function()
 		["Kurinnaxx"] = "庫林納克斯",
 
                 ["Stoneskin Gargoyle"] = true,
+				["Necro Stalker"] = true,
+				["Venom Stalker"] = true,
 	}
 end)
 
 BabbleBoss:RegisterTranslations("koKR", function()
 	return {
+		["Necro Stalker"] = true,
+		["Venom Stalker"] = true,
 		["Stoneskin Gargoyle"] = true,
 		["Avalanchion"] = "아발란치온",
 		["The Windreaver"] = "칼날바람",

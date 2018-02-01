@@ -7,7 +7,7 @@
 ## Notes-zhTW: 團隊首領戰訊息提示插件，帶有計時條。
 ## Author: Tekkub Stoutwrithe, Ammo, Shyva, Rabbit, LYQ, Dorann, Hosq & Others
 ## Version: 2.0.0
-## X-Website: https://github.com/Vnm/BigWigs
+## X-Website: https://github.com/Vnm-Kronos/BigWigs/
 ## X-Category: Raid
 ## X-RelSite-WoWI: 5086
 ## X-RelSite-Curse: 4356
@@ -157,3 +157,4 @@ Raids\Naxxramas\Horsemen.lua
 Raids\Naxxramas\Sapphiron.lua
 Raids\Naxxramas\Kelthuzad.lua
 Raids\Naxxramas\LivingMonstrosity.lua
+Raids\Naxxramas\SpiderTrash.lua

@@ -78,6 +78,10 @@ L:RegisterTranslations("enUS", function() return {
 	soundwrtorhs = "Interface\\Addons\\BigWigs\\Sounds\\healthstone.wav",
 	soundshadowpotandbandage = "Interface\\Addons\\BigWigs\\Sounds\\potionandbandage.wav",
 	soundgoforbuff = "Interface\\Addons\\BigWigs\\Sounds\\goforbuff.wav",
+	
+	count_cmd = "count",
+	count_name = "Spore Count",
+	count_desc = "Add a group counter for spores(1-7)",
 
 } end )
 
@@ -93,7 +97,7 @@ LoathebDebuff:SetOwner(WorldFrame, "ANCHOR_NONE")
 module.revision = 20004 -- To be overridden by the module!
 module.enabletrigger = module.translatedName -- string or table {boss, add1, add2}
 --module.wipemobs = { L["add_name"] } -- adds which will be considered in CheckForEngage
-module.toggleoptions = {"doom", "curse", "spore", "debuff", -1, "consumable", "graphic", "sound", "bosskill"}
+module.toggleoptions = {"doom", "curse", "spore", "debuff", "count", -1, "consumable", "graphic", "sound", "bosskill"}
 
 
 -- locals
@@ -121,6 +125,7 @@ local syncName = {
 }
 local consumableslist = {L["shadowpot"],L["noconsumable"],L["bandage"],L["wrtorhs"],L["shadowpotandbandage"],L["noconsumable"],L["bandage"],L["noconsumable"],L["wrtorhs"]}
 local numSpore = 0 -- how many spores have been spawned
+local numGroups = 7 -- total groups getting spores.  Hardcoded unless I look at how Bigwigs does options
 local numDoom = 0 -- how many dooms have been casted
 local timeCurseWarning = 0
 
@@ -181,6 +186,9 @@ function module:OnSetup()
 	numSpore = 0 -- how many spores have been spawned
 	numDoom = 0 -- how many dooms have been casted
 	timer.doom = timer.firstDoom
+	
+	--Reset spore count
+	numSpore = 0   
 
 	self.frameIcon:Hide()
 	self.frameIcon2:Hide()
@@ -295,7 +303,11 @@ function module:Spore()
 	numSpore = numSpore + 1
 
 	if self.db.profile.spore then
-		self:Bar(string.format(L["sporebar"], numSpore), timer.spore, icon.spore)
+		local barStr = string.format(L["sporebar"], numSpore)
+		if self.db.profile.count then
+			barStr = barStr .. " - " .. (math.mod(numSpore - 1, groups) + 1)
+		end
+		self:Bar(barStr, timer.spore, icon.spore)
 	end
 end
 

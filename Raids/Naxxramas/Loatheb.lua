@@ -125,7 +125,8 @@ local syncName = {
 }
 local consumableslist = {L["shadowpot"],L["noconsumable"],L["bandage"],L["wrtorhs"],L["shadowpotandbandage"],L["noconsumable"],L["bandage"],L["noconsumable"],L["wrtorhs"]}
 local numSpore = 0 -- how many spores have been spawned
-local numGroups = 7 -- total groups getting spores.  Hardcoded unless I look at how Bigwigs does options
+local numGroup = 0 -- current group getting spore
+local totalGroups = 7 -- total groups getting spores.  Hardcoded at 7 
 local numDoom = 0 -- how many dooms have been casted
 local timeCurseWarning = 0
 
@@ -301,11 +302,16 @@ end
 
 function module:Spore()
 	numSpore = numSpore + 1
+	numGroup = numGroup + 1
+	if numGroup > totalGroups then --wrap around to group 1
+		numGroup = 1
+	end
 
 	if self.db.profile.spore then
 		local barStr = string.format(L["sporebar"], numSpore)
 		if self.db.profile.count then
-			barStr = barStr .. " - " .. (math.mod(numSpore - 1, groups) + 1)
+			--barStr = barStr .. " - " .. (math.mod(numSpore - 1, groups) + 1) --Untested method of counting groups
+			barStr = barStr .. " - " .. numGroup
 		end
 		self:Bar(barStr, timer.spore, icon.spore)
 	end
